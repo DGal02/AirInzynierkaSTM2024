@@ -38,6 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define ARRAY_SIZE 100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -63,18 +64,12 @@ const osThreadAttr_t echoTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 int power = 0;
-float testValues[100] = {
-        1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
-        11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0,
-        21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0,
-        31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0, 38.0, 39.0, 40.0,
-        41.0, 42.0, 43.0, 44.0, 45.0, 46.0, 47.0, 48.0, 49.0, 50.0,
-        51.0, 52.0, 53.0, 54.0, 55.0, 56.0, 57.0, 58.0, 59.0, 60.0,
-        61.0, 62.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 70.0,
-        71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0, 78.0, 79.0, 80.0,
-        81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0,
-        91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0
-    };
+typedef struct {
+	int array[ARRAY_SIZE];
+	int position;
+} DataPosition;
+DataPosition dataA = {{0}, 0};
+int testValue = 1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,6 +80,16 @@ void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 void StartEchoTask(void *argument);
+void push(DataPosition* data, int value) {
+	if (data->position < ARRAY_SIZE) {
+		data->array[data->position] = value;
+		data->position++;
+	}
+}
+
+void clear(DataPosition* data) {
+	data->position = 0;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -411,8 +416,9 @@ void StartDefaultTask(void * argument)
   /* Infinite loop */
   for(;;)
   {
-	  power = 50;
-      osDelay(1000);
+	  push(&dataA, testValue);
+	  testValue++;
+      osDelay(100);
   }
   /* USER CODE END 5 */
 }
@@ -446,16 +452,15 @@ void StartEchoTask(void *argument)
               cJSON *power_item = cJSON_GetObjectItemCaseSensitive(json, "power");
               power = power_item->valueint;
               cJSON_Delete(json);
-              int array_size = sizeof(testValues) / sizeof(testValues[0]);
               cJSON *json_array = cJSON_CreateArray();
-              for (int i = 0; i < array_size; i++) {
-                     cJSON_AddItemToArray(json_array, cJSON_CreateNumber(testValues[i]));
+              for (int i = 0; i < dataA.position; i++) {
+                     cJSON_AddItemToArray(json_array, cJSON_CreateNumber(dataA.array[i]));
               }
+              clear(&dataA);
               char *json_string = cJSON_Print(json_array);
               netconn_write(newconn, json_string, strlen(json_string), NETCONN_COPY);
               cJSON_Delete(json_array);
 			  free(json_string);
-			  testValues[0] = testValues[0] + 1.0;
             }
             while (netbuf_next(buf) >= 0);
             netbuf_delete(buf);
