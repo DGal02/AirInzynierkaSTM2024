@@ -28,6 +28,7 @@
 #include "lwip/api.h"
 //#include "lwip/udp.h"
 #include <string.h>
+#include <math.h>
 #include "cjson.h";
 /* USER CODE END Includes */
 
@@ -65,11 +66,11 @@ const osThreadAttr_t echoTask_attributes = {
 };
 int power = 0;
 typedef struct {
-	int array[ARRAY_SIZE];
+	double array[ARRAY_SIZE];
 	int position;
 } DataPosition;
 DataPosition dataA = {{0}, 0};
-int testValue = 1;
+double testValue = 0.0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -80,7 +81,7 @@ void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 void StartEchoTask(void *argument);
-void push(DataPosition* data, int value) {
+void push(DataPosition* data, double value) {
 	if (data->position < ARRAY_SIZE) {
 		data->array[data->position] = value;
 		data->position++;
@@ -416,9 +417,10 @@ void StartDefaultTask(void * argument)
   /* Infinite loop */
   for(;;)
   {
-	  push(&dataA, testValue);
-	  testValue++;
-      osDelay(100);
+	  double sinValue = sin(M_PI * testValue);
+	  push(&dataA, sinValue);
+	  testValue += 0.1;
+      osDelay(osKernelGetTickFreq() / 10);
   }
   /* USER CODE END 5 */
 }
@@ -454,7 +456,7 @@ void StartEchoTask(void *argument)
               cJSON_Delete(json);
               cJSON *json_array = cJSON_CreateArray();
               for (int i = 0; i < dataA.position; i++) {
-                     cJSON_AddItemToArray(json_array, cJSON_CreateNumber(dataA.array[i]));
+                     cJSON_AddItemToArray(json_array, cJSON_CreateNumber((long long int)(dataA.array[i]*1000)));
               }
               clear(&dataA);
               char *json_string = cJSON_Print(json_array);
