@@ -64,13 +64,16 @@ const osThreadAttr_t echoTask_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-int power = 0;
 typedef struct {
 	double array[ARRAY_SIZE];
 	int position;
 } DataPosition;
 DataPosition dataA = {{0}, 0};
+DataPosition dataB = {{0}, 0};
+float amplitudeA = 1.0;
+float amplitudeB = 1.0;
 double testValue = 0.0;
+int isFetching = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -417,8 +420,13 @@ void StartDefaultTask(void * argument)
   /* Infinite loop */
   for(;;)
   {
-	  double sinValue = sin(M_PI * testValue);
-	  push(&dataA, sinValue);
+	  double sinValue = amplitudeA*sin(M_PI * testValue);
+	  double cosValue = amplitudeB*cos(M_PI * testValue);
+	  if (isFetching == 1) {
+		  push(&dataA, sinValue);
+		  push(&dataB, cosValue);
+	  }
+
 	  testValue += 0.1;
       osDelay(osKernelGetTickFreq() / 10);
   }
@@ -450,19 +458,45 @@ void StartEchoTask(void *argument)
           while (netconn_recv(newconn, &buf) == ERR_OK) {
             do {
               netbuf_data(buf, &data, &len);
-              cJSON *json = cJSON_Parse(data);
-              cJSON *power_item = cJSON_GetObjectItemCaseSensitive(json, "power");
-              power = power_item->valueint;
-              cJSON_Delete(json);
-              cJSON *json_array = cJSON_CreateArray();
-              for (int i = 0; i < dataA.position; i++) {
-                     cJSON_AddItemToArray(json_array, cJSON_CreateNumber((long long int)(dataA.array[i]*1000)));
+              cJSON *jsonReceived = cJSON_Parse(data);
+              if (jsonReceived != NULL) {
+			  cJSON *isFetchingItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "isFetching");
+				if (cJSON_IsNumber(isFetchingItem)) {
+				  isFetching = isFetchingItem->valueint;
+				}
+
+              cJSON *amplitudeAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeA");
+              if (cJSON_IsNumber(amplitudeAItem)) {
+            	  amplitudeA = amplitudeAItem->valuedouble;
               }
+
+              cJSON *amplitudeBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeB");
+				if (cJSON_IsNumber(amplitudeBItem)) {
+				amplitudeB = amplitudeBItem->valuedouble;
+				}
+
+              cJSON_Delete(jsonReceived);
+              }
+
+              cJSON *jsonObject = cJSON_CreateObject();
+              cJSON *jsonArrayA = cJSON_CreateArray();
+              for (int i = 0; i < dataA.position; i++) {
+                     cJSON_AddItemToArray(jsonArrayA, cJSON_CreateNumber((long long int)(dataA.array[i]*1000)));
+              }
+              cJSON_AddItemToObject(jsonObject, "dataA", jsonArrayA);
               clear(&dataA);
-              char *json_string = cJSON_Print(json_array);
-              netconn_write(newconn, json_string, strlen(json_string), NETCONN_COPY);
-              cJSON_Delete(json_array);
-			  free(json_string);
+
+              cJSON *jsonArrayB = cJSON_CreateArray();
+              for (int i = 0; i < dataB.position; i++) {
+                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber((long long int)(dataB.array[i]*1000)));
+              }
+              cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
+              clear(&dataB);
+
+              char *jsonStringifiedSend = cJSON_Print(jsonObject);
+              netconn_write(newconn, jsonStringifiedSend, strlen(jsonStringifiedSend), NETCONN_COPY);
+              cJSON_Delete(jsonObject);
+			  free(jsonStringifiedSend);
             }
             while (netbuf_next(buf) >= 0);
             netbuf_delete(buf);
