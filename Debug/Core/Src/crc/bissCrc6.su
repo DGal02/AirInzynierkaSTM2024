@@ -1,0 +1,4 @@
+../Core/Src/crc/bissCrc6.cpp:18:1:BissCrc6::BissCrc6()	16	static
+../Core/Src/crc/bissCrc6.cpp:23:9:uint8_t BissCrc6::calcCrc_raw(uint64_t)	64	static
+../Core/Src/crc/bissCrc6.cpp:40:9:uint8_t BissCrc6::calcCrc(EncFrame)	24	static
+../Core/Src/crc/bissCrc6.cpp:49:6:bool BissCrc6::checkCrc(EncFrame)	32	static

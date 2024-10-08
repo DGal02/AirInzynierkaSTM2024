@@ -1,0 +1,9 @@
+../Core/Inc/parameters/encoder_params.hpp:3:8:constexpr EncoderParams::EncoderParams()	16	static
+../Core/Src/measurement/encoder_driver.cpp:19:1:EncoderDriver::EncoderDriver(SPI_HandleTypeDef*)	16	static
+../Core/Src/measurement/encoder_driver.cpp:25:6:void EncoderDriver::checkAck()	24	static
+../Core/Src/measurement/encoder_driver.cpp:45:6:void EncoderDriver::getStartIndex()	24	static
+../Core/Src/measurement/encoder_driver.cpp:58:6:void EncoderDriver::getShift()	24	static
+../Core/Src/measurement/encoder_driver.cpp:81:6:void EncoderDriver::assignData()	24	static
+../Core/Src/measurement/encoder_driver.cpp:94:6:void EncoderDriver::calcPos()	16	static
+../Core/Src/measurement/encoder_driver.cpp:102:6:void EncoderDriver::readRequest()	16	static
+../Core/Src/measurement/encoder_driver.cpp:116:10:uint32_t EncoderDriver::readEncoder()	16	static
