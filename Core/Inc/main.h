@@ -69,12 +69,22 @@ void Error_Handler(void);
 #define STLINK_TX_GPIO_Port GPIOD
 #define USB_OTG_FS_PWR_EN_Pin GPIO_PIN_10
 #define USB_OTG_FS_PWR_EN_GPIO_Port GPIOD
+#define S_DIR_Pin GPIO_PIN_2
+#define S_DIR_GPIO_Port GPIOG
+#define S_CLK_Pin GPIO_PIN_3
+#define S_CLK_GPIO_Port GPIOG
 #define USB_OTG_FS_OVCR_Pin GPIO_PIN_7
 #define USB_OTG_FS_OVCR_GPIO_Port GPIOG
+#define USB_OTG_FS_OVCR_EXTI_IRQn EXTI9_5_IRQn
+#define S_EN_Pin GPIO_PIN_2
+#define S_EN_GPIO_Port GPIOD
 #define LD2_Pin GPIO_PIN_1
 #define LD2_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
-
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+void engineEnableControl(void);
+void readRequest();
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

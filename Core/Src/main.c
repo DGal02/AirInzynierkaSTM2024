@@ -29,7 +29,10 @@
 //#include "lwip/udp.h"
 #include <string.h>
 #include <math.h>
-#include "cjson.h";
+#include "cjson.h"
+#include <stdlib.h>
+#include "config.hpp"
+#include <measurement/encoder_data.hpp>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,6 +43,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define ARRAY_SIZE 100
+#define BUF_LEN 30
+#define ENC_FRAME_BYTES 5
+#define BUF_POS_LEN 100000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,7 +55,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-/* USER CODE BEGIN PV */
+SPI_HandleTypeDef hspi3;
+
+TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim5;
+
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
@@ -57,6 +67,8 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* USER CODE BEGIN PV */
+/* Definitions for defaultTask */
 osThreadId_t echoTaskHandle;
 
 const osThreadAttr_t echoTask_attributes = {
@@ -74,12 +86,63 @@ float amplitudeA = 1.0;
 float amplitudeB = 1.0;
 double testValue = 0.0;
 int isFetching = 0;
+
+uint8_t buff[BUF_LEN];
+uint8_t buff2[ENC_FRAME_BYTES];
+int pos[BUF_POS_LEN];
+uint32_t cntP = 0;
+
+union EncFrame dataEnc;
+uint8_t crcOk = 0;
+union CrcFrame dataNoCrc;
+uint8_t crcC;
+uint8_t isAckDetected = 0;
+uint8_t isStartDeteted = 0;
+uint8_t startBuf = 0;
+uint8_t shift = 0;
+
+double posAngle = 0;
+uint32_t cntErr = 0;
+uint8_t isTransfer = 0;
+HAL_StatusTypeDef code;
+
+/* Engine control data -------------------------------------------------------*/
+
+uint8_t directionToSet = 0;
+uint8_t currentDirection = 0;
+
+uint8_t enableToSet = 0;
+uint8_t isEnabled = 0;
+
+uint8_t isClocked = 0;
+
+uint8_t frequencyPrescaler = 9; // frequency divider (+1)
+uint32_t cntFreq = 0;
+
+/* Controller data -----------------------------------------------------------*/
+uint32_t desiredPos = 2e+7;
+int posiError = 0;
+int32_t deadZoneRange = 100;
+uint32_t kp = 3000; // formally its 1/kp
+double u = 0.0;
+uint32_t u_floor = 0;
+uint32_t u_sat = 0;
+uint32_t uMax = 9;
+
+/* Trajectory generator data--------------------------------------------------*/
+uint32_t cntSin = 0;
+uint32_t desiredPosConst = 2e+7;
+uint8_t trajMode = 0;
+uint8_t isTrajInit = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_SPI3_Init(void);
+static void MX_TIM5_Init(void);
+static void MX_TIM4_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -138,6 +201,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_SPI3_Init();
+  MX_TIM5_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -179,6 +245,7 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  dataEnc.all = 0;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -203,47 +270,26 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-//  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0); // #CLOCKCHANGE
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-//  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-//  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-//  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-//  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-//  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-//  RCC_OscInitStruct.PLL.PLLM = 32;
-//  RCC_OscInitStruct.PLL.PLLN = 400;
-//  RCC_OscInitStruct.PLL.PLLP = 2;
-//  RCC_OscInitStruct.PLL.PLLQ = 2;
-//  RCC_OscInitStruct.PLL.PLLR = 2;
-//  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_1;
-//  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-//  RCC_OscInitStruct.PLL.PLLFRACN = 0;
-
-  /* Enable HSE Oscillator and activate PLL with HSE as source */
-   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE; // #CLOCKCHANGE
-   RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-   RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
-
-   RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
-   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-
-   RCC_OscInitStruct.PLL.PLLM = 4;
-   RCC_OscInitStruct.PLL.PLLN = 480;
-   RCC_OscInitStruct.PLL.PLLFRACN = 0;
-   RCC_OscInitStruct.PLL.PLLP = 2;
-   RCC_OscInitStruct.PLL.PLLR = 2;
-   RCC_OscInitStruct.PLL.PLLQ = 4;
-
-   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
-
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 30;
+  RCC_OscInitStruct.PLL.PLLP = 2;
+  RCC_OscInitStruct.PLL.PLLQ = 6;
+  RCC_OscInitStruct.PLL.PLLR = 2;
+  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
+  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+  RCC_OscInitStruct.PLL.PLLFRACN = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -257,15 +303,153 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV1;
+  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) // FLASH_LATENCY_2 // #CLOCKCHANGE
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief SPI3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI3_Init(void)
+{
+
+  /* USER CODE BEGIN SPI3_Init 0 */
+
+  /* USER CODE END SPI3_Init 0 */
+
+  /* USER CODE BEGIN SPI3_Init 1 */
+
+  /* USER CODE END SPI3_Init 1 */
+  /* SPI3 parameter configuration*/
+  hspi3.Instance = SPI3;
+  hspi3.Init.Mode = SPI_MODE_MASTER;
+  hspi3.Init.Direction = SPI_DIRECTION_2LINES_RXONLY;
+  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi3.Init.NSS = SPI_NSS_SOFT;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi3.Init.CRCPolynomial = 0x0;
+  hspi3.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+  hspi3.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+  hspi3.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+  hspi3.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi3.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+  hspi3.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
+  hspi3.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+  hspi3.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+  hspi3.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+  hspi3.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+  if (HAL_SPI_Init(&hspi3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI3_Init 2 */
+
+  /* USER CODE END SPI3_Init 2 */
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 60-1;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 500-1;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 120-1;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 100-1;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
+
 }
 
 /**
@@ -290,7 +474,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(USB_OTG_FS_PWR_EN_GPIO_Port, USB_OTG_FS_PWR_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, USB_OTG_FS_PWR_EN_Pin|S_EN_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOG, S_DIR_Pin|S_CLK_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
@@ -316,12 +503,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : USB_OTG_FS_PWR_EN_Pin */
-  GPIO_InitStruct.Pin = USB_OTG_FS_PWR_EN_Pin;
+  /*Configure GPIO pins : USB_OTG_FS_PWR_EN_Pin S_EN_Pin */
+  GPIO_InitStruct.Pin = USB_OTG_FS_PWR_EN_Pin|S_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(USB_OTG_FS_PWR_EN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : S_DIR_Pin S_CLK_Pin */
+  GPIO_InitStruct.Pin = S_DIR_Pin|S_CLK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USB_OTG_FS_OVCR_Pin */
   GPIO_InitStruct.Pin = USB_OTG_FS_OVCR_Pin;
@@ -344,95 +538,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-//void StartDefaultTask(void *argument)
-//{
-//  /* init code for LWIP */
-//  MX_LWIP_Init();
-//  /* USER CODE BEGIN 5 */
-//  /* ETH_CODE: Adding lwiperf to measure TCP/IP performance.
-//   * iperf 2.0.6 (or older?) is required for the tests. Newer iperf2 versions
-//   * might work without data check, but they send different headers.
-//   * iperf3 is not compatible at all.
-//   * Adding lwiperf.c file to the project is necessary.
-//   * The default include path should already contain
-//   * 'lwip/apps/lwiperf.h'
-//   */
-//  LOCK_TCPIP_CORE();
-//  lwiperf_start_tcp_server_default(NULL, NULL);
-//
-////  ip4_addr_t remote_addr;
-////  IP4_ADDR(&remote_addr, 192, 168, 1, 111);
-////  lwiperf_start_tcp_client_default(&remote_addr, NULL, NULL);
-//  UNLOCK_TCPIP_CORE();
-//  /* Infinite loop */
-//  for(;;)
-//  {
-//    osDelay(1000);
-//  }
-//  /* USER CODE END 5 */
-//
-////  /* USER CODE BEGIN 5 */
-////  const char* message = "Hello UDP message!\n\r";
-////
-////  osDelay(1000);
-////
-////  ip_addr_t PC_IPADDR;
-////  IP_ADDR4(&PC_IPADDR, 192, 168, 1, 111);
-////
-////  struct udp_pcb* my_udp = udp_new();
-////  udp_connect(my_udp, &PC_IPADDR, 55151);
-////  struct pbuf* udp_buffer = NULL;
-////
-////  /* Infinite loop */
-////  for (;;) {
-////    osDelay(1000);
-////    /* !! PBUF_RAM is critical for correct operation !! */
-////    udp_buffer = pbuf_alloc(PBUF_TRANSPORT, strlen(message), PBUF_RAM);
-////
-////    if (udp_buffer != NULL) {
-////      memcpy(udp_buffer->payload, message, strlen(message));
-////      udp_send(my_udp, udp_buffer);
-////      pbuf_free(udp_buffer);
-////    }
-////  }
-////  /* USER CODE END 5 */
-//}
-
-void StartDefaultTask(void * argument)
-{
-  /* init code for LWIP */
-  MX_LWIP_Init();
-  /* USER CODE BEGIN 5 */
-  echoTaskHandle = osThreadNew(StartEchoTask, NULL, &echoTask_attributes);
-  /* Infinite loop */
-  for(;;)
-  {
-	  double sinValue = amplitudeA*sin(M_PI * testValue);
-	  double cosValue = amplitudeB*cos(M_PI * testValue);
-	  if (isFetching == 1) {
-		  push(&dataA, sinValue);
-		  push(&dataB, cosValue);
-	  }
-
-	  testValue += 0.1;
-      osDelay(osKernelGetTickFreq() / 10);
-  }
-  /* USER CODE END 5 */
-}
-
 void StartEchoTask(void *argument)
 {
   struct netconn *conn, *newconn;
@@ -512,7 +624,51 @@ void StartEchoTask(void *argument)
     }
   }
 }
+/* USER CODE END 4 */
 
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* init code for LWIP */
+  MX_LWIP_Init();
+  /* USER CODE BEGIN 5 */
+  echoTaskHandle = osThreadNew(StartEchoTask, NULL, &echoTask_attributes);
+//  /* ETH_CODE: Adding lwiperf to measure TCP/IP performance.
+//   * iperf 2.0.6 (or older?) is required for the tests. Newer iperf2 versions
+//   * might work without data check, but they send different headers.
+//   * iperf3 is not compatible at all.
+//   * Adding lwiperf.c file to the project is necessary.
+//   * The default include path should already contain
+//   * 'lwip/apps/lwiperf.h'
+//   */
+  LOCK_TCPIP_CORE();
+  lwiperf_start_tcp_server_default(NULL, NULL);
+
+//  ip4_addr_t remote_addr;
+//  IP4_ADDR(&remote_addr, 192, 168, 1, 111);
+//  lwiperf_start_tcp_client_default(&remote_addr, NULL, NULL);
+  UNLOCK_TCPIP_CORE();
+  /* Infinite loop */
+  for(;;)
+  {
+	  double sinValue = amplitudeA*sin(M_PI * testValue);
+	  double cosValue = amplitudeB*cos(M_PI * testValue);
+	  if (isFetching == 1) {
+		  push(&dataA, sinValue);
+		  push(&dataB, cosValue);
+	  }
+
+	  testValue += 0.1;
+      osDelay(osKernelGetTickFreq() / 10);
+  }
+  /* USER CODE END 5 */
+}
 
 /* MPU Configuration */
 
@@ -574,18 +730,15 @@ void MPU_Config(void)
   * @param  htim : TIM handle
   * @retval None
   */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
+
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM6) {
-    HAL_IncTick();
-  }
+
   /* USER CODE BEGIN Callback 1 */
 
   /* USER CODE END Callback 1 */
-}
+
 
 /**
   * @brief  This function is executed in case of error occurrence.

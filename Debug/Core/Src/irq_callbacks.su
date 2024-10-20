@@ -1,0 +1,22 @@
+C:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.1.202309131626\tools\bin/../lib/gcc/arm-none-eabi/11.3.1/../../../../arm-none-eabi/include/c++/11.3.1/bits/std_abs.h:56:3:long int std::abs(long int)	16	static
+../Core/Inc/signal_processing/cordic_32bit.h:24:13:void cordic(int, int*, int*, int)	56	static
+../Core/Inc/signal_processing/cordic_32bit.h:42:14:float shiftAngle180(float)	16	static
+../Core/Inc/signal_processing/cordic_32bit.h:55:12:int shiftAngle90(float*)	16	static
+../Core/Inc/signal_processing/cordic_32bit.h:73:13:void sinCordic(float, float*)	32	static
+../Core/Inc/control/sin_generator.hpp:20:2:SinGenerator::SinGenerator(float)	16	static
+../Core/Inc/control/sin_generator.hpp:25:7:void SinGenerator::initialize(uint32_t, uint32_t, float)	24	static
+../Core/Inc/control/sin_generator.hpp:34:11:uint32_t SinGenerator::calc()	32	static
+../Core/Inc/control/trajectory_generator.hpp:30:2:TrajectoryGenerator::TrajectoryGenerator(float)	16	static
+../Core/Inc/control/trajectory_generator.hpp:35:11:uint32_t TrajectoryGenerator::calc()	16	static
+../Core/Inc/parameters/motion_params.hpp:8:8:constexpr MotionParams::MotionParams()	16	static
+../Core/Inc/control/stepper_controller.hpp:37:2:StepperController::StepperController()	16	static
+../Core/Inc/control/stepper_controller.hpp:42:7:void StepperController::calcInput(uint32_t, uint32_t)	48	static
+../Core/Inc/control/stepper_controller.hpp:89:7:void StepperController::generateSignal()	16	static
+../Core/Inc/control/stepper_controller.hpp:107:7:void StepperController::setDirection()	16	static
+../Core/Src/irq_callbacks.cpp:25:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	16	static
+../Core/Src/irq_callbacks.cpp:38:6:void TIM4_IRQ_Callback()	8	static
+../Core/Src/irq_callbacks.cpp:56:6:void TIM5_IRQ_Callback()	8	static
+../Core/Src/irq_callbacks.cpp:67:6:void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*)	16	static
+../Core/Src/irq_callbacks.cpp:75:6:void SPI3_ReceiveCompleteCallback()	16	static
+../Core/Src/irq_callbacks.cpp:80:1:void __static_initialization_and_destruction_0(int, int)	16	static
+../Core/Src/irq_callbacks.cpp:80:1:cpp)	8	static
