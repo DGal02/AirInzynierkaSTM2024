@@ -545,7 +545,85 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void StartEchoTask(void *argument)
+{
+  struct netconn *conn, *newconn;
+  err_t err, accept_err;
+  struct netbuf *buf;
+  void *data;
+  u16_t len;
 
+  LWIP_UNUSED_ARG(argument);
+
+  conn = netconn_new(NETCONN_TCP);
+
+  if (conn != NULL) {
+    err = netconn_bind(conn, NULL, LWIPERF_TCP_PORT_DEFAULT);
+
+    if (err == ERR_OK) {
+      netconn_listen(conn);
+
+      while (1) {
+        accept_err = netconn_accept(conn, &newconn);
+
+        if (accept_err == ERR_OK) {
+          while (netconn_recv(newconn, &buf) == ERR_OK) {
+            do {
+              netbuf_data(buf, &data, &len);
+              cJSON *jsonReceived = cJSON_Parse(data);
+              if (jsonReceived != NULL) {
+			  cJSON *isFetchingItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "isFetching");
+				if (cJSON_IsNumber(isFetchingItem)) {
+				  isFetching = isFetchingItem->valueint;
+				}
+
+              cJSON *amplitudeAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeA");
+              if (cJSON_IsNumber(amplitudeAItem)) {
+            	  amplitudeA = amplitudeAItem->valuedouble;
+              }
+
+              cJSON *amplitudeBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeB");
+				if (cJSON_IsNumber(amplitudeBItem)) {
+				amplitudeB = amplitudeBItem->valuedouble;
+				}
+
+              cJSON_Delete(jsonReceived);
+              }
+
+              cJSON *jsonObject = cJSON_CreateObject();
+              cJSON *jsonArrayA = cJSON_CreateArray();
+              for (int i = 0; i < dataA.position; i++) {
+                     cJSON_AddItemToArray(jsonArrayA, cJSON_CreateNumber((long long int)(dataA.array[i]*1000)));
+              }
+              cJSON_AddItemToObject(jsonObject, "dataA", jsonArrayA);
+              clear(&dataA);
+
+              cJSON *jsonArrayB = cJSON_CreateArray();
+              for (int i = 0; i < dataB.position; i++) {
+                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber((long long int)(dataB.array[i]*1000)));
+              }
+              cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
+              clear(&dataB);
+
+              char *jsonStringifiedSend = cJSON_Print(jsonObject);
+              netconn_write(newconn, jsonStringifiedSend, strlen(jsonStringifiedSend), NETCONN_COPY);
+              cJSON_Delete(jsonObject);
+			  free(jsonStringifiedSend);
+            }
+            while (netbuf_next(buf) >= 0);
+            netbuf_delete(buf);
+          }
+
+          netconn_close(newconn);
+          netconn_delete(newconn);
+        }
+      }
+    }
+    else {
+      netconn_delete(newconn);
+    }
+  }
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -560,6 +638,7 @@ void StartDefaultTask(void *argument)
   /* init code for LWIP */
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
+  echoTaskHandle = osThreadNew(StartEchoTask, NULL, &echoTask_attributes);
 //  /* ETH_CODE: Adding lwiperf to measure TCP/IP performance.
 //   * iperf 2.0.6 (or older?) is required for the tests. Newer iperf2 versions
 //   * might work without data check, but they send different headers.
@@ -578,7 +657,15 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1000);
+	  double sinValue = amplitudeA*sin(M_PI * testValue);
+	  double cosValue = amplitudeB*cos(M_PI * testValue);
+	  if (isFetching == 1) {
+		  push(&dataA, sinValue);
+		  push(&dataB, cosValue);
+	  }
+
+	  testValue += 0.1;
+      osDelay(osKernelGetTickFreq() / 10);
   }
   /* USER CODE END 5 */
 }
