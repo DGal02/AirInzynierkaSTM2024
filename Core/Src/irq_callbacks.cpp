@@ -17,7 +17,7 @@ extern "C"
 	extern uint8_t isClocked;
 	extern uint32_t desiredPos;
 }
-
+int probe = 0;
 EncoderDriver encDriver(&hspi3);
 TrajectoryGenerator trajGen(1e-4);
 StepperController stepperController;
@@ -76,5 +76,12 @@ void SPI3_ReceiveCompleteCallback()
 {
 	uint32_t pos = encDriver.readEncoder();
 	uint32_t desPos = trajGen.calc();
+	if (isFetching) {
+		probe++;
+		if (probe >= 10000) {
+			probe = 0;
+			push(&dataA, pos);
+		}
+	}
 	stepperController.calcInput(desPos, pos);
 }

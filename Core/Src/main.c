@@ -42,7 +42,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ARRAY_SIZE 100
 #define BUF_LEN 30
 #define ENC_FRAME_BYTES 5
 #define BUF_POS_LEN 100000
@@ -76,10 +75,6 @@ const osThreadAttr_t echoTask_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-typedef struct {
-	double array[ARRAY_SIZE];
-	int position;
-} DataPosition;
 DataPosition dataA = {{0}, 0};
 DataPosition dataB = {{0}, 0};
 float amplitudeA = 1.0;
@@ -558,7 +553,7 @@ void StartEchoTask(void *argument)
   conn = netconn_new(NETCONN_TCP);
 
   if (conn != NULL) {
-    err = netconn_bind(conn, NULL, LWIPERF_TCP_PORT_DEFAULT);
+    err = netconn_bind(conn, NULL, 5002);
 
     if (err == ERR_OK) {
       netconn_listen(conn);
@@ -657,15 +652,16 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	  double sinValue = amplitudeA*sin(M_PI * testValue);
-	  double cosValue = amplitudeB*cos(M_PI * testValue);
-	  if (isFetching == 1) {
-		  push(&dataA, sinValue);
-		  push(&dataB, cosValue);
-	  }
-
-	  testValue += 0.1;
-      osDelay(osKernelGetTickFreq() / 10);
+//	  double sinValue = amplitudeA*sin(M_PI * testValue);
+//	  double cosValue = amplitudeB*cos(M_PI * testValue);
+//	  if (isFetching == 1) {
+//		  push(&dataA, sinValue);
+//		  push(&dataB, cosValue);
+//	  }
+//
+//	  testValue += 0.1;
+//      osDelay(osKernelGetTickFreq() / 10);
+	  osDelay(10000000);
   }
   /* USER CODE END 5 */
 }
