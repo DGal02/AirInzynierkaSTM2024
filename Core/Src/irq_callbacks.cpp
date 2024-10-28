@@ -2,6 +2,8 @@
 #include <measurement/encoder_driver.hpp>
 #include <control/trajectory_generator.hpp>
 #include <control/stepper_controller.hpp>
+#include "stm32h7xx_it.h"
+#include <cstring>
 
 extern "C"
 {
@@ -22,16 +24,23 @@ EncoderDriver encDriver(&hspi3);
 TrajectoryGenerator trajGen(1e-4);
 StepperController stepperController;
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
-{
-	if (htim == &htim4) {
-		TIM4_IRQ_Callback();
-	}
-	else if (htim == &htim5) {
-		TIM5_IRQ_Callback();
-	} else if (htim->Instance == TIM6) {
-	    HAL_IncTick();
-	}
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
+//{
+//	if (htim == &htim4) {
+//		TIM4_IRQ_Callback();
+//	}
+//	if (htim->Instance == TIM6) {
+//	    HAL_IncTick();
+//	}
+//}
+
+void TIM5_IRQHandler(void) {
+    if (__HAL_TIM_GET_FLAG(&htim5, TIM_FLAG_UPDATE) != RESET) {
+        if (__HAL_TIM_GET_IT_SOURCE(&htim5, TIM_IT_UPDATE) != RESET) {
+            __HAL_TIM_CLEAR_IT(&htim5, TIM_IT_UPDATE);
+            TIM5_IRQ_Callback();
+        }
+    }
 }
 
 /* Set clock signal to control stepper motor */
@@ -70,6 +79,27 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 	{
 		SPI3_ReceiveCompleteCallback();
 	}
+}
+#define FRAME_SIZE 30  // Definiowanie rozmiaru ramki
+
+uint8_t receivedData[FRAME_SIZE]; // Bufor do przechowywania odebranych danych
+uint8_t dataIndex = 0; // Indeks do śledzenia pozycji w buforze
+
+void SPI3_IRQHandler(void) {
+    HAL_SPI_IRQHandler(&hspi3);
+    if (__HAL_SPI_GET_FLAG(&hspi3, SPI_FLAG_RXNE) != RESET) {
+//        receivedData[dataIndex] = (uint8_t)(hspi3.Instance->DR);
+        dataIndex++;
+        if (dataIndex >= FRAME_SIZE) {
+            SPI3_ReceiveCompleteCallback();
+            dataIndex = 0;
+             memset(receivedData, 0, sizeof(receivedData));
+        }
+    }
+
+    if (__HAL_SPI_GET_FLAG(&hspi3, SPI_FLAG_OVR) != RESET) {
+        __HAL_SPI_CLEAR_OVRFLAG(&hspi3);
+    }
 }
 
 void SPI3_ReceiveCompleteCallback()

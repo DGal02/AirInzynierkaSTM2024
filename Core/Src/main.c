@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include "config.hpp"
 #include <measurement/encoder_data.hpp>
+#include "irq_callbacks.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -442,10 +443,21 @@ static void MX_TIM5_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM5_Init 2 */
-
+  HAL_NVIC_SetPriority(TIM5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(TIM5_IRQn);
+  HAL_TIM_Base_Start_IT(&htim5);
   /* USER CODE END TIM5_Init 2 */
 
 }
+
+//void TIM5_IRQHandler(void) {
+//    if (__HAL_TIM_GET_FLAG(&htim5, TIM_FLAG_UPDATE) != RESET) {
+//        if (__HAL_TIM_GET_IT_SOURCE(&htim5, TIM_IT_UPDATE) != RESET) {
+//            __HAL_TIM_CLEAR_IT(&htim5, TIM_IT_UPDATE);
+//            TIM5_IRQ_Callback();
+//        }
+//    }
+//}
 
 /**
   * @brief GPIO Initialization Function
@@ -726,15 +738,18 @@ void MPU_Config(void)
   * @param  htim : TIM handle
   * @retval None
   */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
   /* USER CODE BEGIN Callback 1 */
 
   /* USER CODE END Callback 1 */
-
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
