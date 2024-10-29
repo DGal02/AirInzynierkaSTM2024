@@ -80,23 +80,9 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 		SPI3_ReceiveCompleteCallback();
 	}
 }
-#define FRAME_SIZE 30  // Definiowanie rozmiaru ramki
-
-uint8_t receivedData[FRAME_SIZE]; // Bufor do przechowywania odebranych danych
-uint8_t dataIndex = 0; // Indeks do śledzenia pozycji w buforze
 
 void SPI3_IRQHandler(void) {
     HAL_SPI_IRQHandler(&hspi3);
-    if (__HAL_SPI_GET_FLAG(&hspi3, SPI_FLAG_RXNE) != RESET) {
-//        receivedData[dataIndex] = (uint8_t)(hspi3.Instance->DR);
-        dataIndex++;
-        if (dataIndex >= FRAME_SIZE) {
-            SPI3_ReceiveCompleteCallback();
-            dataIndex = 0;
-             memset(receivedData, 0, sizeof(receivedData));
-        }
-    }
-
     if (__HAL_SPI_GET_FLAG(&hspi3, SPI_FLAG_OVR) != RESET) {
         __HAL_SPI_CLEAR_OVRFLAG(&hspi3);
     }
@@ -110,7 +96,8 @@ void SPI3_ReceiveCompleteCallback()
 		probe++;
 		if (probe >= 10000) {
 			probe = 0;
-			push(&dataA, pos);
+//			push(&dataA, pos);
+			push(&dataA, 125.5);
 		}
 	}
 	stepperController.calcInput(desPos, pos);

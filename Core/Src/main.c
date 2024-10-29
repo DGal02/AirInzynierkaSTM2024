@@ -81,7 +81,7 @@ DataPosition dataB = {{0}, 0};
 float amplitudeA = 1.0;
 float amplitudeB = 1.0;
 double testValue = 0.0;
-int isFetching = 0;
+int isFetching = 1;
 
 uint8_t buff[BUF_LEN];
 uint8_t buff2[ENC_FRAME_BYTES];
