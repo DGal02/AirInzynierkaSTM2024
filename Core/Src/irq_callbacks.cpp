@@ -18,6 +18,7 @@ extern "C"
 	extern uint32_t cntFreq;
 	extern uint8_t isClocked;
 	extern uint32_t desiredPos;
+	extern double posAngle;
 }
 int probe = 0;
 EncoderDriver encDriver(&hspi3);
@@ -96,8 +97,7 @@ void SPI3_ReceiveCompleteCallback()
 		probe++;
 		if (probe >= 10000) {
 			probe = 0;
-//			push(&dataA, pos);
-			push(&dataA, 125.5);
+			push(&dataA, posAngle);
 		}
 	}
 	stepperController.calcInput(desPos, pos);
