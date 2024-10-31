@@ -40,7 +40,7 @@ Core/Src/irq_callbacks.o: ../Core/Src/irq_callbacks.cpp \
  ../Core/Inc/control/sin_generator.hpp \
  ../Core/Inc/signal_processing/cordic_32bit.h \
  ../Core/Inc/control/stepper_controller.hpp \
- ../Core/Inc/parameters/motion_params.hpp
+ ../Core/Inc/parameters/motion_params.hpp ../Core/Inc/stm32h7xx_it.h
 ../Core/Inc/irq_callbacks.hpp:
 ../Core/Inc/measurement/encoder_driver.hpp:
 ../Core/Inc/main.h:
@@ -86,3 +86,4 @@ Core/Src/irq_callbacks.o: ../Core/Src/irq_callbacks.cpp \
 ../Core/Inc/signal_processing/cordic_32bit.h:
 ../Core/Inc/control/stepper_controller.hpp:
 ../Core/Inc/parameters/motion_params.hpp:
+../Core/Inc/stm32h7xx_it.h:

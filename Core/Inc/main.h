@@ -83,8 +83,18 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define ARRAY_SIZE 10000
 void engineEnableControl(void);
 void readRequest();
+typedef struct {
+	double array[ARRAY_SIZE];
+	int position;
+} DataPosition;
+void push(DataPosition* data, double value);
+void clear(DataPosition* data);
+extern DataPosition dataA;
+extern DataPosition dataB;
+extern int isFetching;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

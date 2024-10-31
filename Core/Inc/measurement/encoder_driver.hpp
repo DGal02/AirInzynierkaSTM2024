@@ -11,7 +11,7 @@ extern "C"
 
 class EncoderDriver
 {
-private:
+public:
 	static const uint8_t dataBuffLen = 30;
 	static const uint8_t frameBuffLen = 5;
 	//	uint8_t * dataBuff;
@@ -30,7 +30,6 @@ private:
 	uint8_t shift = 0;
 
 	bool isTransfer = false;
-public:
 	EncFrame dataWithCrc;
 	bool isCrcOk = 0;
 
