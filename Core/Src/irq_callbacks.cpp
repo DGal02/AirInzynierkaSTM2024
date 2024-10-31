@@ -44,15 +44,24 @@ void TIM5_IRQHandler(void) {
     }
 }
 
+void TIM4_IRQHandler(void) {
+    if (__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_UPDATE) != RESET) {
+        if (__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_UPDATE) != RESET) {
+            __HAL_TIM_CLEAR_IT(&htim4, TIM_IT_UPDATE);
+            TIM4_IRQ_Callback();
+        }
+    }
+}
+
 /* Set clock signal to control stepper motor */
 void TIM4_IRQ_Callback()
 {
-	stepperController.generateSignal();
+//	stepperController.generateSignal();
 //	if (isClocked)
 //	{
 //		if (cntFreq == frequencyPrescaler)
 //		{
-//			HAL_GPIO_TogglePin(S_CLK_GPIO_Port, S_CLK_Pin);
+			HAL_GPIO_TogglePin(S_CLK_GPIO_Port, S_CLK_Pin);
 //			cntFreq = 0;
 //		}
 //		else
@@ -97,7 +106,7 @@ void SPI3_ReceiveCompleteCallback()
 		probe++;
 		if (probe >= 10000) {
 			probe = 0;
-			push(&dataA, posAngle);
+			push(&dataA, pos);
 		}
 	}
 	stepperController.calcInput(desPos, pos);

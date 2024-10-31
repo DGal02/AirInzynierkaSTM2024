@@ -81,7 +81,7 @@ DataPosition dataB = {{0}, 0};
 float amplitudeA = 1.0;
 float amplitudeB = 1.0;
 double testValue = 0.0;
-int isFetching = 1;
+int isFetching = 0;
 
 uint8_t buff[BUF_LEN];
 uint8_t buff2[ENC_FRAME_BYTES];
@@ -398,7 +398,9 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM4_Init 2 */
-
+  HAL_NVIC_SetPriority(TIM4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(TIM4_IRQn);
+  HAL_TIM_Base_Start_IT(&htim4);
   /* USER CODE END TIM4_Init 2 */
 
 }
@@ -600,14 +602,14 @@ void StartEchoTask(void *argument)
               cJSON *jsonObject = cJSON_CreateObject();
               cJSON *jsonArrayA = cJSON_CreateArray();
               for (int i = 0; i < dataA.position; i++) {
-                     cJSON_AddItemToArray(jsonArrayA, cJSON_CreateNumber((long long int)(dataA.array[i]*1000)));
+                     cJSON_AddItemToArray(jsonArrayA, cJSON_CreateNumber((long long int)(dataA.array[i])));
               }
               cJSON_AddItemToObject(jsonObject, "dataA", jsonArrayA);
               clear(&dataA);
 
               cJSON *jsonArrayB = cJSON_CreateArray();
               for (int i = 0; i < dataB.position; i++) {
-                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber((long long int)(dataB.array[i]*1000)));
+                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber((long long int)(dataB.array[i])));
               }
               cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
               clear(&dataB);
