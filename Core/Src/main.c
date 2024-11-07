@@ -116,7 +116,7 @@ uint8_t frequencyPrescaler = 9; // frequency divider (+1)
 uint32_t cntFreq = 0;
 
 /* Controller data -----------------------------------------------------------*/
-uint32_t desiredPos = 2e+7;
+uint32_t desiredPos = 20000000;
 int posiError = 0;
 int32_t deadZoneRange = 100;
 uint32_t kp = 3000; // formally its 1/kp
@@ -589,6 +589,7 @@ void StartEchoTask(void *argument)
               cJSON *amplitudeAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeA");
               if (cJSON_IsNumber(amplitudeAItem)) {
             	  amplitudeA = amplitudeAItem->valuedouble;
+            	  desiredPos = amplitudeAItem->valuedouble / 5.98364147543706e-9;
               }
 
               cJSON *amplitudeBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeB");

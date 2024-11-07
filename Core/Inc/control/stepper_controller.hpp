@@ -58,6 +58,7 @@ public:
 			isClocked = 1; //debug
 		}
 
+
 		if (posError > 0)
 		{
 			direction = Direction::Forward;
@@ -69,38 +70,39 @@ public:
 			directionToSet = 1; //debug
 		}
 
-		if (posError == 0)
-			u = motionParams.maxPrescaler;
-		else
-			u = (double)motionParams.controllerGain / abs(posError);
-
-		u_floor = (uint32_t)floor(u);
-		u_sat = MIN(u_floor, motionParams.maxPrescaler);
-
-		if (u_sat < prescaler)
-			counter = MIN(counter, u_sat);
-
-		prescaler = u_sat;
-		frequencyPrescaler = u_sat; //debug
-
-		setDirection();
+//		if (posError == 0)
+//			u = motionParams.maxPrescaler;
+//		else
+//			u = (double)motionParams.controllerGain / abs(posError);
+//
+//		u_floor = (uint32_t)floor(u);
+//		u_sat = MIN(u_floor, motionParams.maxPrescaler);
+//
+//		if (u_sat < prescaler)
+//			counter = MIN(counter, u_sat);
+//
+//		prescaler = u_sat;
+//		frequencyPrescaler = u_sat; //debug
+		if (isSignalGenerated) {
+			setDirection();
+		}
 	}
 
 	void generateSignal()
 	{
 		if (isSignalGenerated)
 		{
-			if (counter == prescaler)
-			{
+//			if (counter == prescaler)
+//			{
 				HAL_GPIO_TogglePin(S_CLK_GPIO_Port, S_CLK_Pin);
-				counter = 0;
-				cntFreq = 0; //debug
-			}
-			else
-			{
-				counter++;
-				cntFreq = counter; //debug
-			}
+//				counter = 0;
+//				cntFreq = 0; //debug
+//			}
+//			else
+//			{
+//				counter++;
+//				cntFreq = counter; //debug
+//			}
 		}
 	}
 

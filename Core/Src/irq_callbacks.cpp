@@ -56,12 +56,14 @@ void TIM4_IRQHandler(void) {
 /* Set clock signal to control stepper motor */
 void TIM4_IRQ_Callback()
 {
-//	stepperController.generateSignal();
+	if (isFetching) {
+		stepperController.generateSignal();
+	}
 //	if (isClocked)
 //	{
 //		if (cntFreq == frequencyPrescaler)
 //		{
-			HAL_GPIO_TogglePin(S_CLK_GPIO_Port, S_CLK_Pin);
+//			HAL_GPIO_TogglePin(S_CLK_GPIO_Port, S_CLK_Pin);
 //			cntFreq = 0;
 //		}
 //		else
