@@ -95,6 +95,7 @@ void clear(DataPosition* data);
 extern DataPosition dataA;
 extern DataPosition dataB;
 extern int isFetching;
+extern int isEngineEnabled;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
