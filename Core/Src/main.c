@@ -73,7 +73,7 @@ osThreadId_t echoTaskHandle;
 
 const osThreadAttr_t echoTask_attributes = {
   .name = "echoTask",
-  .stack_size = 512 * 4,
+  .stack_size = 512 * 32,
   .priority = (osPriority_t) osPriorityNormal,
 };
 DataPosition dataA = {{0}, 0};
@@ -144,8 +144,8 @@ void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 void StartEchoTask(void *argument);
-void push(DataPosition* data, double value) {
-	if (data->position < ARRAY_SIZE - 10) {
+void push(DataPosition* data, uint32_t value) {
+	if (data->position < ARRAY_SIZE) {
 		data->array[data->position] = value;
 		data->position++;
 	}
@@ -587,16 +587,15 @@ void StartEchoTask(void *argument)
 				  isFetching = isFetchingItem->valueint;
 				}
 
-				 cJSON *isEngineEnabledItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "isEngineEnabled");
-					if (cJSON_IsNumber(isEngineEnabledItem)) {
-					  isEngineEnabled = isEngineEnabledItem->valueint;
-					  HAL_GPIO_WritePin(S_EN_GPIO_Port, S_EN_Pin, isEngineEnabled == 1);
-					}
+			 cJSON *isEngineEnabledItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "isEngineEnabled");
+				if (cJSON_IsNumber(isEngineEnabledItem)) {
+				  isEngineEnabled = isEngineEnabledItem->valueint;
+				  HAL_GPIO_WritePin(S_EN_GPIO_Port, S_EN_Pin, isEngineEnabled == 1);
+				}
 
               cJSON *amplitudeAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeA");
               if (cJSON_IsNumber(amplitudeAItem)) {
-            	  amplitudeA = amplitudeAItem->valuedouble;
-            	  desiredPos = amplitudeAItem->valuedouble / 5.98364147543706e-9;
+            	  desiredPos = amplitudeAItem->valueint;
               }
 
               cJSON *amplitudeBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeB");
@@ -610,19 +609,19 @@ void StartEchoTask(void *argument)
               cJSON *jsonObject = cJSON_CreateObject();
               cJSON *jsonArrayA = cJSON_CreateArray();
               for (int i = 0; i < dataA.position; i++) {
-                     cJSON_AddItemToArray(jsonArrayA, cJSON_CreateNumber((long long int)(dataA.array[i])));
+                     cJSON_AddItemToArray(jsonArrayA, cJSON_CreateNumber(dataA.array[i]));
               }
               cJSON_AddItemToObject(jsonObject, "dataA", jsonArrayA);
               clear(&dataA);
 
               cJSON *jsonArrayB = cJSON_CreateArray();
               for (int i = 0; i < dataB.position; i++) {
-                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber((long long int)(dataB.array[i])));
+                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber(dataB.array[i]));
               }
               cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
               clear(&dataB);
 
-              char *jsonStringifiedSend = cJSON_Print(jsonObject);
+              char *jsonStringifiedSend = cJSON_PrintUnformatted(jsonObject);
               netconn_write(newconn, jsonStringifiedSend, strlen(jsonStringifiedSend), NETCONN_COPY);
               cJSON_Delete(jsonObject);
 			  free(jsonStringifiedSend);

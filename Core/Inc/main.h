@@ -87,10 +87,10 @@ void Error_Handler(void);
 void engineEnableControl(void);
 void readRequest();
 typedef struct {
-	double array[ARRAY_SIZE];
+	uint32_t array[ARRAY_SIZE];
 	int position;
 } DataPosition;
-void push(DataPosition* data, double value);
+void push(DataPosition* data, uint32_t value);
 void clear(DataPosition* data);
 extern DataPosition dataA;
 extern DataPosition dataB;
