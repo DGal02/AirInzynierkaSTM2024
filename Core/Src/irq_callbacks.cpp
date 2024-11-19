@@ -56,7 +56,7 @@ void TIM4_IRQHandler(void) {
 /* Set clock signal to control stepper motor */
 void TIM4_IRQ_Callback()
 {
-	if (isFetching) {
+	if (isEngineEnabled) {
 		stepperController.generateSignal();
 	}
 //	if (isClocked)
@@ -106,7 +106,7 @@ void SPI3_ReceiveCompleteCallback()
 	uint32_t desPos = trajGen.calc();
 	if (isFetching) {
 		probe++;
-		if (probe >= 10000) {
+		if (probe >= 1000) {
 			probe = 0;
 			push(&dataA, pos);
 		}
