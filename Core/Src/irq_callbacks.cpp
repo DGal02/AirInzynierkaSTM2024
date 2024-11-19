@@ -105,11 +105,7 @@ void SPI3_ReceiveCompleteCallback()
 	uint32_t pos = encDriver.readEncoder();
 	uint32_t desPos = trajGen.calc();
 	if (isFetching) {
-		probe++;
-		if (probe >= 1000) {
-			probe = 0;
-			push(&dataA, pos);
-		}
+		push(&dataA, pos);
 	}
 	stepperController.calcInput(desPos, pos);
 }

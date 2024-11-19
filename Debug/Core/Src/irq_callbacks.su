@@ -20,5 +20,5 @@ C:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.external
 ../Core/Src/irq_callbacks.cpp:88:6:void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*)	16	static
 ../Core/Src/irq_callbacks.cpp:96:6:void SPI3_IRQHandler()	8	static
 ../Core/Src/irq_callbacks.cpp:103:6:void SPI3_ReceiveCompleteCallback()	16	static
-../Core/Src/irq_callbacks.cpp:115:1:void __static_initialization_and_destruction_0(int, int)	16	static
-../Core/Src/irq_callbacks.cpp:115:1:cpp)	8	static
+../Core/Src/irq_callbacks.cpp:111:1:void __static_initialization_and_destruction_0(int, int)	16	static
+../Core/Src/irq_callbacks.cpp:111:1:cpp)	8	static
