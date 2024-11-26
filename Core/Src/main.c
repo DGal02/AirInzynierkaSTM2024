@@ -593,14 +593,14 @@ void StartEchoTask(void *argument)
 				  HAL_GPIO_WritePin(S_EN_GPIO_Port, S_EN_Pin, isEngineEnabled == 1);
 				}
 
-              cJSON *amplitudeAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeA");
-              if (cJSON_IsNumber(amplitudeAItem)) {
-            	  desiredPos = amplitudeAItem->valueint;
+              cJSON *positionAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionA");
+              if (cJSON_IsNumber(positionAItem)) {
+            	  desiredPos = positionAItem->valueint;
               }
 
-              cJSON *amplitudeBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "amplitudeB");
-				if (cJSON_IsNumber(amplitudeBItem)) {
-				amplitudeB = amplitudeBItem->valuedouble;
+              cJSON *positionBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionB");
+				if (cJSON_IsNumber(positionBItem)) {
+				amplitudeB = positionBItem->valuedouble;
 				}
 
               cJSON_Delete(jsonReceived);
