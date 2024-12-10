@@ -13,9 +13,6 @@ extern "C"
 	extern uint8_t buff[30];
 }
 
-uint8_t EncoderDriver::dataBuff[dataBuffLen] = {0};
-uint8_t EncoderDriver::frameBuff[8] = {0};
-
 EncoderDriver::EncoderDriver(SPI_HandleTypeDef * spi): spi(spi)
 {
 

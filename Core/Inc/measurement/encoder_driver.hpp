@@ -15,8 +15,8 @@ public:
 	static const uint8_t dataBuffLen = 30;
 	static const uint8_t frameBuffLen = 5;
 	//	uint8_t * dataBuff;
-	static uint8_t dataBuff[dataBuffLen];
-	static uint8_t frameBuff[8];
+	uint8_t dataBuff[dataBuffLen];
+	uint8_t frameBuff[8];
 
 	SPI_HandleTypeDef * spi;
 	EncoderParams encParams;
