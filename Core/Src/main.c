@@ -137,9 +137,9 @@ uint8_t isTrajInit = 0;
 void SystemClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_SPI3_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_SPI3_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -198,9 +198,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_SPI3_Init();
   MX_TIM5_Init();
   MX_TIM4_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -452,15 +452,6 @@ static void MX_TIM5_Init(void)
   /* USER CODE END TIM5_Init 2 */
 
 }
-
-//void TIM5_IRQHandler(void) {
-//    if (__HAL_TIM_GET_FLAG(&htim5, TIM_FLAG_UPDATE) != RESET) {
-//        if (__HAL_TIM_GET_IT_SOURCE(&htim5, TIM_IT_UPDATE) != RESET) {
-//            __HAL_TIM_CLEAR_IT(&htim5, TIM_IT_UPDATE);
-//            TIM5_IRQ_Callback();
-//        }
-//    }
-//}
 
 /**
   * @brief GPIO Initialization Function
