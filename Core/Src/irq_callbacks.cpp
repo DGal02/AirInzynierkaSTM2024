@@ -80,7 +80,7 @@ void TIM5_IRQ_Callback()
 {
 //	readRequest();
 	encDriver.readRequest();
-	encDriverB.readRequest();
+//	encDriverB.readRequest();
 //	SPI3_ReceiveCompleteCallback();
 //	readEncoder();
 //	trajectoryGenerator();
