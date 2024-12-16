@@ -18,6 +18,9 @@ public:
 	static uint8_t dataBuff[dataBuffLen];
 	static uint8_t frameBuff[8];
 
+	static uint8_t dataBuffB[dataBuffLen];
+	static uint8_t frameBuffB[8];
+
 	SPI_HandleTypeDef * spi;
 	EncoderParams encParams;
 
@@ -44,6 +47,15 @@ public:
 	void assignData();
 	void calcPos();
 	void readRequest();
+
+	void readRequestB();
+
+	void checkAckB();
+	void getStartIndexB();
+	void getShiftB();
+	void assignDataB();
 //	double readEncoder();
 	uint32_t readEncoder();
+
+	uint32_t readEncoderB();
 };

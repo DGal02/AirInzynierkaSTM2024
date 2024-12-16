@@ -16,6 +16,9 @@ extern "C"
 uint8_t EncoderDriver::dataBuff[dataBuffLen] = {0};
 uint8_t EncoderDriver::frameBuff[8] = {0};
 
+uint8_t EncoderDriver::dataBuffB[dataBuffLen] = {0};
+uint8_t EncoderDriver::frameBuffB[8] = {0};
+
 EncoderDriver::EncoderDriver(SPI_HandleTypeDef * spi): spi(spi)
 {
 
@@ -41,12 +44,39 @@ void EncoderDriver::checkAck()
 //		isAckDetected = false;
 }
 
+void EncoderDriver::checkAckB()
+{
+	isAckDetected = false;
+
+	for (int i = 0; i < 8; i++)
+	{
+		uint8_t check = (dataBuffB[0] << i) ^ 0x80;
+		if (check == 0x00)
+		{
+			isAckDetected = true;
+			break;
+		}
+	}
+}
+
 /* check from which byte we have start (10) */
 void EncoderDriver::getStartIndex()
 {
 	for (int i = 1; i < dataBuffLen; i++)
 	{
 		if (dataBuff[i] != 0x00)
+		{
+			startIndex = i;
+			break;
+		}
+	}
+}
+
+void EncoderDriver::getStartIndexB()
+{
+	for (int i = 1; i < dataBuffLen; i++)
+	{
+		if (dataBuffB[i] != 0x00)
 		{
 			startIndex = i;
 			break;
@@ -77,6 +107,28 @@ void EncoderDriver::getShift()
 	}
 }
 
+void EncoderDriver::getShiftB()
+{
+	for (int i = 0; i < 8; i++)
+	{
+		if (((dataBuffB[startIndex] << i) & 0x80) == 0x80)
+		{
+			 if ((((dataBuffB[startIndex] << i) | (dataBuffB[startIndex+1] >> (8-i))) & 0xC0) == 0x80)
+				 isStartDeteted = 1;
+
+			 shift = i + 2;
+
+			 if (shift > 7)
+			 {
+				 startIndex++;
+				 shift = shift - 8;
+			 }
+
+			 break;
+		}
+	}
+}
+
 /* shift data and assign data to structure (crc warn err pos) */
 void EncoderDriver::assignData()
 {
@@ -87,6 +139,18 @@ void EncoderDriver::assignData()
 	}
 
 	dataWithCrc = *((union EncFrame*)(frameBuff));
+	dataEnc.all = dataWithCrc.all; //debug
+}
+
+void EncoderDriver::assignDataB()
+{
+	for (int i = 0; i < frameBuffLen; i++)
+	{
+		int j = startIndex + i;
+		frameBuffB[frameBuffLen - 1 - i] = (dataBuffB[j] << shift) | (dataBuffB[j+1] >> (8-shift));
+	}
+
+	dataWithCrc = *((union EncFrame*)(frameBuffB));
 	dataEnc.all = dataWithCrc.all; //debug
 }
 
@@ -105,6 +169,20 @@ void EncoderDriver::readRequest()
 	if (!isTransfer)
 	{
 		HAL_SPI_Receive_IT(spi, dataBuff, dataBuffLen);
+		isTransfer = true;
+	}
+	else
+	{
+		cntErr++;
+	}
+}
+
+void EncoderDriver::readRequestB()
+{
+//	HAL_SPI_Receive(spi, dataBuff, dataBuffLen, HAL_MAX_DELAY);
+	if (!isTransfer)
+	{
+		HAL_SPI_Receive_IT(spi, dataBuffB, dataBuffLen);
 		isTransfer = true;
 	}
 	else
@@ -133,5 +211,20 @@ uint32_t EncoderDriver::readEncoder()
 //	cntP = cntP % BUF_POS_LEN; //debug
 
 //	return posCalibrated;
+	return dataWithCrc.bit.pos;
+}
+
+uint32_t EncoderDriver::readEncoderB()
+{
+	checkAckB();
+	getStartIndexB();
+	getShiftB();
+	assignDataB();
+	isCrcOk = bissCrc.checkCrc(dataWithCrc);
+	if (isCrcOk)
+		calcPos();
+	crcOk = (uint8_t)isCrcOk; //debug
+	isTransfer = false;
+
 	return dataWithCrc.bit.pos;
 }

@@ -79,8 +79,8 @@ void TIM4_IRQ_Callback()
 void TIM5_IRQ_Callback()
 {
 //	readRequest();
-	encDriverB.readRequest();
-//	encDriverB.readRequest();
+	encDriver.readRequest();
+//	encDriverB.readRequestB();
 //	SPI3_ReceiveCompleteCallback();
 //	readEncoder();
 //	trajectoryGenerator();
@@ -117,16 +117,16 @@ void SPI2_IRQHandler(void) {
 void SPI3_ReceiveCompleteCallback()
 {
 	uint32_t pos = encDriver.readEncoder();
-	uint32_t desPos = trajGen.calc();
+//	uint32_t desPos = trajGen.calc();
 	if (isFetching) {
 		push(&dataA, pos);
 	}
-	stepperController.calcInput(desPos, pos);
+//	stepperController.calcInput(desPos, pos);
 }
 
 void SPI2_ReceiveCompleteCallback()
 {
-	uint32_t pos = encDriverB.readEncoder();
+	uint32_t pos = encDriverB.readEncoderB();
 //	uint32_t desPos = trajGen.calc();
 	if (isFetching) {
 		push(&dataB, pos);
