@@ -79,7 +79,7 @@ void TIM4_IRQ_Callback()
 void TIM5_IRQ_Callback()
 {
 //	readRequest();
-	encDriver.readRequest();
+	encDriverB.readRequest();
 //	encDriverB.readRequest();
 //	SPI3_ReceiveCompleteCallback();
 //	readEncoder();
