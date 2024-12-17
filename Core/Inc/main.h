@@ -96,6 +96,7 @@ extern DataPosition dataA;
 extern DataPosition dataB;
 extern int isFetching;
 extern int isEngineEnabled;
+extern int mode;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

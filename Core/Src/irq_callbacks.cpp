@@ -4,6 +4,13 @@
 #include <control/stepper_controller.hpp>
 #include "stm32h7xx_it.h"
 #include <cstring>
+#include <math.h>
+
+#define SAMPLING_RATE 10000
+#define DURATION 10
+#define MIN_VALUE 20000000
+#define MAX_VALUE 25000000
+#define PI 3.14159265358979323846
 
 extern "C"
 {
@@ -26,6 +33,12 @@ EncoderDriver encDriver(&hspi3);
 EncoderDriver encDriverB(&hspi2);
 TrajectoryGenerator trajGen(1e-4);
 StepperController stepperController;
+
+double frequency = 1.0 / DURATION;
+double amplitude = (MAX_VALUE - MIN_VALUE) / 2.0;
+double offset = (MAX_VALUE + MIN_VALUE) / 2.0;
+int totalSamples = SAMPLING_RATE * DURATION;
+int halfPeriodSamples = SAMPLING_RATE * (DURATION / 2.0);
 
 //void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 //{
@@ -79,8 +92,22 @@ void TIM4_IRQ_Callback()
 void TIM5_IRQ_Callback()
 {
 //	readRequest();
-//	encDriver.readRequest();
-	encDriverB.readRequestB();
+	if (mode == 1) {
+        desiredPos = amplitude * sin(2.0 * PI * frequency * probe / SAMPLING_RATE) + offset;
+	} else if (mode == 2) {
+		 if (probe < halfPeriodSamples) {
+			desiredPos = MAX_VALUE;
+		} else {
+			desiredPos = MIN_VALUE;
+		}
+	}
+
+	probe++;
+	if (probe >= totalSamples) {
+		probe = 0;
+	}
+	encDriver.readRequest();
+//	encDriverB.readRequestB();
 //	SPI3_ReceiveCompleteCallback();
 //	readEncoder();
 //	trajectoryGenerator();
@@ -111,11 +138,11 @@ void SPI2_IRQHandler(void) {
 void SPI3_ReceiveCompleteCallback()
 {
 	uint32_t pos = encDriver.readEncoder();
-//	uint32_t desPos = trajGen.calc();
+	uint32_t desPos = trajGen.calc();
 	if (isFetching) {
 		push(&dataA, pos);
 	}
-//	stepperController.calcInput(desPos, pos);
+	stepperController.calcInput(desPos, pos);
 }
 
 void SPI2_ReceiveCompleteCallback()

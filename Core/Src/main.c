@@ -84,6 +84,7 @@ float amplitudeB = 1.0;
 double testValue = 0.0;
 int isFetching = 0;
 int isEngineEnabled = 0;
+int mode = 0;
 
 uint8_t buff[BUF_LEN];
 uint8_t buff2[ENC_FRAME_BYTES];
@@ -644,6 +645,11 @@ void StartEchoTask(void *argument)
               cJSON *positionBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionB");
 				if (cJSON_IsNumber(positionBItem)) {
 				amplitudeB = positionBItem->valuedouble;
+				}
+
+			cJSON *modeItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "mode");
+				if (cJSON_IsNumber(modeItem)) {
+					mode = modeItem->valueint;
 				}
 
               cJSON_Delete(jsonReceived);
