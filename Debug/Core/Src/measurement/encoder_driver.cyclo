@@ -1,9 +1,15 @@
 ../Core/Inc/parameters/encoder_params.hpp:3:8:constexpr EncoderParams::EncoderParams()	1
-../Core/Src/measurement/encoder_driver.cpp:19:1:EncoderDriver::EncoderDriver(SPI_HandleTypeDef*)	1
-../Core/Src/measurement/encoder_driver.cpp:25:6:void EncoderDriver::checkAck()	3
-../Core/Src/measurement/encoder_driver.cpp:45:6:void EncoderDriver::getStartIndex()	3
-../Core/Src/measurement/encoder_driver.cpp:58:6:void EncoderDriver::getShift()	5
-../Core/Src/measurement/encoder_driver.cpp:81:6:void EncoderDriver::assignData()	2
-../Core/Src/measurement/encoder_driver.cpp:94:6:void EncoderDriver::calcPos()	1
-../Core/Src/measurement/encoder_driver.cpp:102:6:void EncoderDriver::readRequest()	2
-../Core/Src/measurement/encoder_driver.cpp:116:10:uint32_t EncoderDriver::readEncoder()	2
+../Core/Src/measurement/encoder_driver.cpp:22:1:EncoderDriver::EncoderDriver(SPI_HandleTypeDef*)	1
+../Core/Src/measurement/encoder_driver.cpp:28:6:void EncoderDriver::checkAck()	3
+../Core/Src/measurement/encoder_driver.cpp:47:6:void EncoderDriver::checkAckB()	3
+../Core/Src/measurement/encoder_driver.cpp:63:6:void EncoderDriver::getStartIndex()	3
+../Core/Src/measurement/encoder_driver.cpp:75:6:void EncoderDriver::getStartIndexB()	3
+../Core/Src/measurement/encoder_driver.cpp:88:6:void EncoderDriver::getShift()	5
+../Core/Src/measurement/encoder_driver.cpp:110:6:void EncoderDriver::getShiftB()	5
+../Core/Src/measurement/encoder_driver.cpp:133:6:void EncoderDriver::assignData()	2
+../Core/Src/measurement/encoder_driver.cpp:145:6:void EncoderDriver::assignDataB()	2
+../Core/Src/measurement/encoder_driver.cpp:158:6:void EncoderDriver::calcPos()	1
+../Core/Src/measurement/encoder_driver.cpp:166:6:void EncoderDriver::readRequest()	2
+../Core/Src/measurement/encoder_driver.cpp:180:6:void EncoderDriver::readRequestB()	2
+../Core/Src/measurement/encoder_driver.cpp:194:10:uint32_t EncoderDriver::readEncoder()	2
+../Core/Src/measurement/encoder_driver.cpp:217:10:uint32_t EncoderDriver::readEncoderB()	2

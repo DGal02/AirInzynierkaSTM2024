@@ -12,6 +12,7 @@ extern "C"
 	extern TIM_HandleTypeDef htim4;
 	extern TIM_HandleTypeDef htim5;
 
+	extern SPI_HandleTypeDef hspi2;
 	extern SPI_HandleTypeDef hspi3;
 
 	extern uint8_t frequencyPrescaler;
@@ -22,6 +23,7 @@ extern "C"
 }
 int probe = 0;
 EncoderDriver encDriver(&hspi3);
+EncoderDriver encDriverB(&hspi2);
 TrajectoryGenerator trajGen(1e-4);
 StepperController stepperController;
 
@@ -77,7 +79,8 @@ void TIM4_IRQ_Callback()
 void TIM5_IRQ_Callback()
 {
 //	readRequest();
-	encDriver.readRequest();
+//	encDriver.readRequest();
+	encDriverB.readRequestB();
 //	SPI3_ReceiveCompleteCallback();
 //	readEncoder();
 //	trajectoryGenerator();
@@ -91,21 +94,36 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 	{
 		SPI3_ReceiveCompleteCallback();
 	}
+
+	if (hspi == &hspi2) {
+		SPI2_ReceiveCompleteCallback();
+	}
 }
 
 void SPI3_IRQHandler(void) {
     HAL_SPI_IRQHandler(&hspi3);
-    if (__HAL_SPI_GET_FLAG(&hspi3, SPI_FLAG_OVR) != RESET) {
-        __HAL_SPI_CLEAR_OVRFLAG(&hspi3);
-    }
+}
+
+void SPI2_IRQHandler(void) {
+    HAL_SPI_IRQHandler(&hspi2);
 }
 
 void SPI3_ReceiveCompleteCallback()
 {
 	uint32_t pos = encDriver.readEncoder();
-	uint32_t desPos = trajGen.calc();
+//	uint32_t desPos = trajGen.calc();
 	if (isFetching) {
 		push(&dataA, pos);
 	}
-	stepperController.calcInput(desPos, pos);
+//	stepperController.calcInput(desPos, pos);
+}
+
+void SPI2_ReceiveCompleteCallback()
+{
+	uint32_t pos = encDriverB.readEncoderB();
+//	uint32_t desPos = trajGen.calc();
+	if (isFetching) {
+		push(&dataB, pos);
+	}
+//	stepperController.calcInput(desPos, pos);
 }

@@ -56,6 +56,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern ETH_HandleTypeDef heth;
+extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
@@ -179,6 +180,10 @@ void EXTI9_5_IRQHandler(void)
 
 /**
   * @brief This function handles TIM4 global interrupt.
+  */
+
+/**
+  * @brief This function handles SPI2 global interrupt.
   */
 
 /**
