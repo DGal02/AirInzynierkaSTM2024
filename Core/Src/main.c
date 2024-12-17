@@ -611,7 +611,7 @@ void StartEchoTask(void *argument)
   conn = netconn_new(NETCONN_TCP);
 
   if (conn != NULL) {
-    err = netconn_bind(conn, NULL, 5002);
+    err = netconn_bind(conn, NULL, 5003);
 
     if (err == ERR_OK) {
       netconn_listen(conn);

@@ -9,8 +9,8 @@
 ../Core/Src/irq_callbacks.cpp:79:6:void TIM5_IRQ_Callback()	8	static
 ../Core/Src/irq_callbacks.cpp:91:6:void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*)	16	static
 ../Core/Src/irq_callbacks.cpp:103:6:void SPI3_IRQHandler()	8	static
-../Core/Src/irq_callbacks.cpp:110:6:void SPI2_IRQHandler()	8	static
-../Core/Src/irq_callbacks.cpp:117:6:void SPI3_ReceiveCompleteCallback()	16	static
-../Core/Src/irq_callbacks.cpp:127:6:void SPI2_ReceiveCompleteCallback()	16	static
-../Core/Src/irq_callbacks.cpp:135:1:void __static_initialization_and_destruction_0(int, int)	16	static
-../Core/Src/irq_callbacks.cpp:135:1:cpp)	8	static
+../Core/Src/irq_callbacks.cpp:107:6:void SPI2_IRQHandler()	8	static
+../Core/Src/irq_callbacks.cpp:111:6:void SPI3_ReceiveCompleteCallback()	16	static
+../Core/Src/irq_callbacks.cpp:121:6:void SPI2_ReceiveCompleteCallback()	16	static
+../Core/Src/irq_callbacks.cpp:129:1:void __static_initialization_and_destruction_0(int, int)	16	static
+../Core/Src/irq_callbacks.cpp:129:1:cpp)	8	static

@@ -79,8 +79,8 @@ void TIM4_IRQ_Callback()
 void TIM5_IRQ_Callback()
 {
 //	readRequest();
-	encDriver.readRequest();
-//	encDriverB.readRequestB();
+//	encDriver.readRequest();
+	encDriverB.readRequestB();
 //	SPI3_ReceiveCompleteCallback();
 //	readEncoder();
 //	trajectoryGenerator();
@@ -102,16 +102,10 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 
 void SPI3_IRQHandler(void) {
     HAL_SPI_IRQHandler(&hspi3);
-    if (__HAL_SPI_GET_FLAG(&hspi3, SPI_FLAG_OVR) != RESET) {
-        __HAL_SPI_CLEAR_OVRFLAG(&hspi3);
-    }
 }
 
 void SPI2_IRQHandler(void) {
     HAL_SPI_IRQHandler(&hspi2);
-    if (__HAL_SPI_GET_FLAG(&hspi2, SPI_FLAG_OVR) != RESET) {
-        __HAL_SPI_CLEAR_OVRFLAG(&hspi2);
-    }
 }
 
 void SPI3_ReceiveCompleteCallback()
