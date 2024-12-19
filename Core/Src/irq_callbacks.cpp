@@ -29,6 +29,7 @@ extern "C"
 	extern double posAngle;
 }
 int probe = 0;
+int probeTest = 0;
 EncoderDriver encDriver(&hspi3);
 EncoderDriver encDriverB(&hspi2);
 TrajectoryGenerator trajGen(1e-4);
@@ -73,9 +74,7 @@ void TIM4_IRQHandler(void) {
 /* Set clock signal to control stepper motor */
 void TIM4_IRQ_Callback()
 {
-	if (isEngineEnabled) {
-		stepperController.generateSignal();
-	}
+	stepperController.generateSignal();
 //	if (isClocked)
 //	{
 //		if (cntFreq == frequencyPrescaler)
@@ -109,6 +108,15 @@ void TIM5_IRQ_Callback()
 		probe = 0;
 	}
 	encDriver.readRequest();
+	probeTest++;
+	if (probeTest > 50000) {
+		desiredPos = 21000000;
+	} else {
+		desiredPos = 20000000;
+	}
+	if (probeTest >= (50000 * 2)) {
+		probeTest = 0;
+	}
 //	encDriverB.readRequestB();
 //	SPI3_ReceiveCompleteCallback();
 //	readEncoder();
