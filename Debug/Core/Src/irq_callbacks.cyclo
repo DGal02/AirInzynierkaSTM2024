@@ -13,14 +13,14 @@ C:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.external
 ../Core/Inc/control/stepper_controller.hpp:42:7:void StepperController::calcInput(uint32_t, uint32_t)	4
 ../Core/Inc/control/stepper_controller.hpp:91:7:void StepperController::generateSignal()	2
 ../Core/Inc/control/stepper_controller.hpp:109:7:void StepperController::setDirection()	2
-../Core/Src/irq_callbacks.cpp:53:6:void TIM5_IRQHandler()	3
-../Core/Src/irq_callbacks.cpp:62:6:void TIM4_IRQHandler()	3
-../Core/Src/irq_callbacks.cpp:72:6:void TIM4_IRQ_Callback()	2
-../Core/Src/irq_callbacks.cpp:92:6:void TIM5_IRQ_Callback()	5
-../Core/Src/irq_callbacks.cpp:118:6:void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*)	3
-../Core/Src/irq_callbacks.cpp:130:6:void SPI3_IRQHandler()	1
-../Core/Src/irq_callbacks.cpp:134:6:void SPI2_IRQHandler()	1
-../Core/Src/irq_callbacks.cpp:138:6:void SPI3_ReceiveCompleteCallback()	2
-../Core/Src/irq_callbacks.cpp:148:6:void SPI2_ReceiveCompleteCallback()	2
-../Core/Src/irq_callbacks.cpp:156:1:void __static_initialization_and_destruction_0(int, int)	3
-../Core/Src/irq_callbacks.cpp:156:1:cpp)	1
+../Core/Src/irq_callbacks.cpp:55:6:void TIM5_IRQHandler()	3
+../Core/Src/irq_callbacks.cpp:64:6:void TIM4_IRQHandler()	3
+../Core/Src/irq_callbacks.cpp:74:6:void TIM4_IRQ_Callback()	2
+../Core/Src/irq_callbacks.cpp:94:6:void TIM5_IRQ_Callback()	5
+../Core/Src/irq_callbacks.cpp:120:6:void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*)	3
+../Core/Src/irq_callbacks.cpp:132:6:void SPI3_IRQHandler()	1
+../Core/Src/irq_callbacks.cpp:136:6:void SPI2_IRQHandler()	1
+../Core/Src/irq_callbacks.cpp:140:6:void SPI3_ReceiveCompleteCallback()	3
+../Core/Src/irq_callbacks.cpp:154:6:void SPI2_ReceiveCompleteCallback()	2
+../Core/Src/irq_callbacks.cpp:162:1:void __static_initialization_and_destruction_0(int, int)	3
+../Core/Src/irq_callbacks.cpp:162:1:cpp)	1

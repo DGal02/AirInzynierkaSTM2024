@@ -83,17 +83,26 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
-#define ARRAY_SIZE 10000
+#define ARRAY_SIZE 5000
 void engineEnableControl(void);
 void readRequest();
 typedef struct {
 	uint32_t array[ARRAY_SIZE];
 	int position;
 } DataPosition;
+typedef struct {
+	int array[ARRAY_SIZE];
+	int position;
+} DataError;
 void push(DataPosition* data, uint32_t value);
 void clear(DataPosition* data);
+void pushError(DataError* data, int value);
+void clearError(DataError* data);
+
 extern DataPosition dataA;
 extern DataPosition dataB;
+extern DataError dataErrorA;
+extern DataError dataErrorB;
 extern int isFetching;
 extern int isEngineEnabled;
 extern int mode;

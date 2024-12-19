@@ -33,6 +33,8 @@ EncoderDriver encDriver(&hspi3);
 EncoderDriver encDriverB(&hspi2);
 TrajectoryGenerator trajGen(1e-4);
 StepperController stepperController;
+uint8_t probeA = 0;
+uint8_t probeB = 0;
 
 double frequency = 1.0 / DURATION;
 double amplitude = (MAX_VALUE - MIN_VALUE) / 2.0;
@@ -139,9 +141,13 @@ void SPI3_ReceiveCompleteCallback()
 {
 	uint32_t pos = encDriver.readEncoder();
 	uint32_t desPos = trajGen.calc();
-	if (isFetching) {
+	probeA++;
+	if (isFetching && probeA >= 10) {
 		push(&dataA, pos);
+		pushError(&dataErrorA, desiredPos - pos);
+		probeA = 0;
 	}
+
 	stepperController.calcInput(desPos, pos);
 }
 

@@ -74,11 +74,13 @@ osThreadId_t echoTaskHandle;
 
 const osThreadAttr_t echoTask_attributes = {
   .name = "echoTask",
-  .stack_size = 512 * 32,
+  .stack_size = 512 * 40,
   .priority = (osPriority_t) osPriorityNormal,
 };
 DataPosition dataA = {{0}, 0};
 DataPosition dataB = {{0}, 0};
+DataError dataErrorA = {{0}, 0};
+DataError dataErrorB = {{0}, 0};
 float amplitudeA = 1.0;
 float amplitudeB = 1.0;
 double testValue = 0.0;
@@ -156,6 +158,17 @@ void push(DataPosition* data, uint32_t value) {
 
 void clear(DataPosition* data) {
 	data->position = 0;
+}
+
+void clearError(DataError* data) {
+	data->position = 0;
+}
+
+void pushError(DataError* data, int value) {
+	if (data->position < ARRAY_SIZE) {
+		data->array[data->position] = value;
+		data->position++;
+	}
 }
 /* USER CODE END PFP */
 
@@ -663,12 +676,26 @@ void StartEchoTask(void *argument)
               cJSON_AddItemToObject(jsonObject, "dataA", jsonArrayA);
               clear(&dataA);
 
+              cJSON *jsonArrayErrorA = cJSON_CreateArray();
+              for (int i = 0; i < dataErrorA.position; i++) {
+            	  cJSON_AddItemToArray(jsonArrayErrorA, cJSON_CreateNumber(dataErrorA.array[i]));
+              }
+              cJSON_AddItemToObject(jsonObject, "dataErrorA", jsonArrayErrorA);
+              clearError(&dataErrorA);
+
               cJSON *jsonArrayB = cJSON_CreateArray();
               for (int i = 0; i < dataB.position; i++) {
                       cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber(dataB.array[i]));
               }
               cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
               clear(&dataB);
+
+              cJSON *jsonArrayErrorB = cJSON_CreateArray();
+              for (int i = 0; i < dataErrorB.position; i++) {
+            	  cJSON_AddItemToArray(jsonArrayErrorB, cJSON_CreateNumber(dataErrorB.array[i]));
+              }
+              cJSON_AddItemToObject(jsonObject, "dataErrorB", jsonArrayErrorB);
+              clearError(&dataErrorB);
 
               char *jsonStringifiedSend = cJSON_PrintUnformatted(jsonObject);
               netconn_write(newconn, jsonStringifiedSend, strlen(jsonStringifiedSend), NETCONN_COPY);
