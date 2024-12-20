@@ -122,6 +122,7 @@ uint32_t cntFreq = 0;
 
 /* Controller data -----------------------------------------------------------*/
 uint32_t desiredPos = 20000000;
+uint32_t desiredPosB = 20000000;
 int posiError = 0;
 int32_t deadZoneRange = 100;
 uint32_t kp = 3000; // formally its 1/kp
@@ -218,7 +219,6 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM5_Init();
   MX_TIM4_Init();
-
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -529,25 +529,32 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, S2_EN_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOG, S2_DIR_Pin|S2_CLK_Pin|S_DIR_Pin|S_CLK_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, USB_OTG_FS_PWR_EN_Pin|S_EN_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, S_DIR_Pin|S_CLK_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  /*Configure GPIO pins : S2_EN_Pin LD2_Pin */
+  GPIO_InitStruct.Pin = S2_EN_Pin|LD2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -561,6 +568,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : S2_DIR_Pin S2_CLK_Pin S_DIR_Pin S_CLK_Pin */
+  GPIO_InitStruct.Pin = S2_DIR_Pin|S2_CLK_Pin|S_DIR_Pin|S_CLK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
   /*Configure GPIO pins : STLINK_RX_Pin STLINK_TX_Pin */
   GPIO_InitStruct.Pin = STLINK_RX_Pin|STLINK_TX_Pin;
@@ -577,13 +591,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : S_DIR_Pin S_CLK_Pin */
-  GPIO_InitStruct.Pin = S_DIR_Pin|S_CLK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-
   /*Configure GPIO pin : USB_OTG_FS_OVCR_Pin */
   GPIO_InitStruct.Pin = USB_OTG_FS_OVCR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -597,13 +604,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
@@ -657,7 +657,7 @@ void StartEchoTask(void *argument)
 
               cJSON *positionBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionB");
 				if (cJSON_IsNumber(positionBItem)) {
-				amplitudeB = positionBItem->valuedouble;
+				  desiredPosB = positionBItem->valueint;
 				}
 
 			cJSON *modeItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "mode");
@@ -683,19 +683,19 @@ void StartEchoTask(void *argument)
               cJSON_AddItemToObject(jsonObject, "dataErrorA", jsonArrayErrorA);
               clearError(&dataErrorA);
 
-              cJSON *jsonArrayB = cJSON_CreateArray();
-              for (int i = 0; i < dataB.position; i++) {
-                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber(dataB.array[i]));
-              }
-              cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
-              clear(&dataB);
-
               cJSON *jsonArrayErrorB = cJSON_CreateArray();
               for (int i = 0; i < dataErrorB.position; i++) {
             	  cJSON_AddItemToArray(jsonArrayErrorB, cJSON_CreateNumber(dataErrorB.array[i]));
               }
               cJSON_AddItemToObject(jsonObject, "dataErrorB", jsonArrayErrorB);
               clearError(&dataErrorB);
+
+              cJSON *jsonArrayB = cJSON_CreateArray();
+              for (int i = 0; i < dataB.position; i++) {
+                      cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber(dataB.array[i]));
+              }
+              cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
+              clear(&dataB);
 
               char *jsonStringifiedSend = cJSON_PrintUnformatted(jsonObject);
               netconn_write(newconn, jsonStringifiedSend, strlen(jsonStringifiedSend), NETCONN_COPY);

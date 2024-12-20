@@ -26,6 +26,7 @@ extern "C"
 	extern uint32_t cntFreq;
 	extern uint8_t isClocked;
 	extern uint32_t desiredPos;
+	extern uint32_t desiredPosB;
 	extern double posAngle;
 }
 int probe = 0;
@@ -98,12 +99,16 @@ void TIM5_IRQ_Callback()
 {
 //	readRequest();
 	if (mode == 1) {
-        desiredPos = amplitude * sin(2.0 * PI * frequency * probe / SAMPLING_RATE) + offset;
+	    uint32_t posSin = amplitude * sin(2.0 * PI * frequency * probe / SAMPLING_RATE) + offset;
+        desiredPos = posSin;
+        desiredPosB = posSin;
 	} else if (mode == 2) {
 		 if (probe < halfPeriodSamples) {
 			desiredPos = MAX_VALUE;
+			desiredPosB = MAX_VALUE;
 		} else {
 			desiredPos = MIN_VALUE;
+			desiredPosB = MAX_VALUE;
 		}
 	}
 
@@ -143,7 +148,6 @@ void SPI2_IRQHandler(void) {
 void SPI3_ReceiveCompleteCallback()
 {
 	posA = encDriver.readEncoder();
-	uint32_t desPos = trajGen.calc();
 	probeA++;
 	if (isFetching && probeA >= 2) {
 		push(&dataA, posA);
@@ -151,16 +155,16 @@ void SPI3_ReceiveCompleteCallback()
 		probeA = 0;
 	}
 
-	stepperController.calcInput(desPos, posA);
+	stepperController.calcInput(desiredPos, posA);
 }
 
 void SPI2_ReceiveCompleteCallback()
 {
 	posB = encDriverB.readEncoderB();
-//	uint32_t desPos = trajGen.calc();
 	probeB++;
 	if (isFetching && probeB >= 2) {
 		push(&dataB, posB);
+		pushError(&dataErrorB, desiredPosB - posB);
 		probeB = 0;
 	}
 //	stepperController.calcInput(desPos, pos);

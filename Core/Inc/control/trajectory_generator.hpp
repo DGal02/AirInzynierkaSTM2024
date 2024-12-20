@@ -4,6 +4,7 @@ extern "C"
 {
 	#include "main.h"
 	extern uint32_t desiredPos;
+	extern uint32_t desiredPosB;
 	extern uint8_t trajMode;
 	extern uint8_t isTrajInit;
 }
