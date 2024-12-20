@@ -13,14 +13,14 @@ C:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.external
 ../Core/Inc/control/stepper_controller.hpp:42:7:void StepperController::calcInput(uint32_t, uint32_t)	24	static
 ../Core/Inc/control/stepper_controller.hpp:91:7:void StepperController::generateSignal()	16	static
 ../Core/Inc/control/stepper_controller.hpp:109:7:void StepperController::setDirection()	16	static
-../Core/Src/irq_callbacks.cpp:55:6:void TIM5_IRQHandler()	8	static
-../Core/Src/irq_callbacks.cpp:64:6:void TIM4_IRQHandler()	8	static
-../Core/Src/irq_callbacks.cpp:74:6:void TIM4_IRQ_Callback()	8	static
-../Core/Src/irq_callbacks.cpp:94:6:void TIM5_IRQ_Callback()	8	static
-../Core/Src/irq_callbacks.cpp:120:6:void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*)	16	static
-../Core/Src/irq_callbacks.cpp:132:6:void SPI3_IRQHandler()	8	static
-../Core/Src/irq_callbacks.cpp:136:6:void SPI2_IRQHandler()	8	static
-../Core/Src/irq_callbacks.cpp:140:6:void SPI3_ReceiveCompleteCallback()	16	static
-../Core/Src/irq_callbacks.cpp:154:6:void SPI2_ReceiveCompleteCallback()	16	static
-../Core/Src/irq_callbacks.cpp:162:1:void __static_initialization_and_destruction_0(int, int)	16	static
-../Core/Src/irq_callbacks.cpp:162:1:cpp)	8	static
+../Core/Src/irq_callbacks.cpp:58:6:void TIM5_IRQHandler()	8	static
+../Core/Src/irq_callbacks.cpp:67:6:void TIM4_IRQHandler()	8	static
+../Core/Src/irq_callbacks.cpp:77:6:void TIM4_IRQ_Callback()	8	static
+../Core/Src/irq_callbacks.cpp:97:6:void TIM5_IRQ_Callback()	8	static
+../Core/Src/irq_callbacks.cpp:123:6:void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef*)	16	static
+../Core/Src/irq_callbacks.cpp:135:6:void SPI3_IRQHandler()	8	static
+../Core/Src/irq_callbacks.cpp:139:6:void SPI2_IRQHandler()	8	static
+../Core/Src/irq_callbacks.cpp:143:6:void SPI3_ReceiveCompleteCallback()	16	static
+../Core/Src/irq_callbacks.cpp:157:6:void SPI2_ReceiveCompleteCallback()	8	static
+../Core/Src/irq_callbacks.cpp:167:1:void __static_initialization_and_destruction_0(int, int)	16	static
+../Core/Src/irq_callbacks.cpp:167:1:cpp)	8	static

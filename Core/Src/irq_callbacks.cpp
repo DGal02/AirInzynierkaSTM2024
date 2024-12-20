@@ -9,7 +9,7 @@
 #define SAMPLING_RATE 10000
 #define DURATION 10
 #define MIN_VALUE 20000000
-#define MAX_VALUE 25000000
+#define MAX_VALUE 21000000
 #define PI 3.14159265358979323846
 
 extern "C"
@@ -35,6 +35,9 @@ TrajectoryGenerator trajGen(1e-4);
 StepperController stepperController;
 uint8_t probeA = 0;
 uint8_t probeB = 0;
+uint32_t posA = 0;
+uint32_t posB = 0;
+uint8_t probeTimer = 0;
 
 double frequency = 1.0 / DURATION;
 double amplitude = (MAX_VALUE - MIN_VALUE) / 2.0;
@@ -108,13 +111,13 @@ void TIM5_IRQ_Callback()
 	if (probe >= totalSamples) {
 		probe = 0;
 	}
-	encDriver.readRequest();
-//	encDriverB.readRequestB();
-//	SPI3_ReceiveCompleteCallback();
-//	readEncoder();
-//	trajectoryGenerator();
-//	controller(desiredPos);
-//	engineDirectionControl();
+
+	probeTimer++;
+	if (probeTimer >= 5) {
+		encDriver.readRequest();
+		encDriverB.readRequestB();
+		probeTimer = 0;
+	}
 }
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
@@ -139,24 +142,26 @@ void SPI2_IRQHandler(void) {
 
 void SPI3_ReceiveCompleteCallback()
 {
-	uint32_t pos = encDriver.readEncoder();
+	posA = encDriver.readEncoder();
 	uint32_t desPos = trajGen.calc();
 	probeA++;
-	if (isFetching && probeA >= 10) {
-		push(&dataA, pos);
-		pushError(&dataErrorA, desiredPos - pos);
+	if (isFetching && probeA >= 2) {
+		push(&dataA, posA);
+		pushError(&dataErrorA, desiredPos - posA);
 		probeA = 0;
 	}
 
-	stepperController.calcInput(desPos, pos);
+	stepperController.calcInput(desPos, posA);
 }
 
 void SPI2_ReceiveCompleteCallback()
 {
-	uint32_t pos = encDriverB.readEncoderB();
+	posB = encDriverB.readEncoderB();
 //	uint32_t desPos = trajGen.calc();
-	if (isFetching) {
-		push(&dataB, pos);
+	probeB++;
+	if (isFetching && probeB >= 2) {
+		push(&dataB, posB);
+		probeB = 0;
 	}
 //	stepperController.calcInput(desPos, pos);
 }
