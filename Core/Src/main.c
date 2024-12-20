@@ -122,7 +122,7 @@ uint32_t cntFreq = 0;
 
 /* Controller data -----------------------------------------------------------*/
 uint32_t desiredPos = 20000000;
-uint32_t desiredPosB = 20000000;
+uint32_t desiredPosB = 30000000;
 int posiError = 0;
 int32_t deadZoneRange = 100;
 uint32_t kp = 3000; // formally its 1/kp
@@ -648,6 +648,7 @@ void StartEchoTask(void *argument)
 				if (cJSON_IsNumber(isEngineEnabledItem)) {
 				  isEngineEnabled = isEngineEnabledItem->valueint;
 				  HAL_GPIO_WritePin(S_EN_GPIO_Port, S_EN_Pin, isEngineEnabled == 1);
+				  HAL_GPIO_WritePin(S2_EN_GPIO_Port, S2_EN_Pin, isEngineEnabled == 1);
 				}
 
               cJSON *positionAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionA");

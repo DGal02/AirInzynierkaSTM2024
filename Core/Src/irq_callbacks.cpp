@@ -34,6 +34,7 @@ EncoderDriver encDriver(&hspi3);
 EncoderDriver encDriverB(&hspi2);
 TrajectoryGenerator trajGen(1e-4);
 StepperController stepperController;
+StepperController stepperControllerB;
 uint8_t probeA = 0;
 uint8_t probeB = 0;
 uint32_t posA = 0;
@@ -79,6 +80,7 @@ void TIM4_IRQ_Callback()
 {
 	if (isEngineEnabled) {
 		stepperController.generateSignal();
+		stepperControllerB.generateSignalB();
 	}
 //	if (isClocked)
 //	{
@@ -101,14 +103,14 @@ void TIM5_IRQ_Callback()
 	if (mode == 1) {
 	    uint32_t posSin = amplitude * sin(2.0 * PI * frequency * probe / SAMPLING_RATE) + offset;
         desiredPos = posSin;
-        desiredPosB = posSin;
+        desiredPosB = posSin + 10000000;
 	} else if (mode == 2) {
 		 if (probe < halfPeriodSamples) {
 			desiredPos = MAX_VALUE;
-			desiredPosB = MAX_VALUE;
+			desiredPosB = MAX_VALUE + 10000000;
 		} else {
 			desiredPos = MIN_VALUE;
-			desiredPosB = MAX_VALUE;
+			desiredPosB = MIN_VALUE + 10000000;
 		}
 	}
 
@@ -167,5 +169,5 @@ void SPI2_ReceiveCompleteCallback()
 		pushError(&dataErrorB, desiredPosB - posB);
 		probeB = 0;
 	}
-//	stepperController.calcInput(desPos, pos);
+	stepperControllerB.calcInputB(desiredPosB, posB);
 }

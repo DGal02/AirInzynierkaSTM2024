@@ -88,6 +88,42 @@ public:
 		}
 	}
 
+	void calcInputB(uint32_t desPos, uint32_t pos)
+	{
+		double u;
+		uint32_t u_floor;
+
+		posError = desPos - pos;
+		posiError = posError;
+
+		if ((uint32_t)abs(posError) < motionParams.deadZoneRange)
+		{
+			isSignalGenerated = false;
+			isClocked = 0; //debug
+		}
+		else
+		{
+			isSignalGenerated = true;
+			isClocked = 1; //debug
+		}
+
+
+		if (posError > 0)
+		{
+		    direction = Direction::Backward;
+			directionToSet = 1; //debug
+		}
+		else
+		{
+            direction = Direction::Forward;
+			directionToSet = 0; //debug
+		}
+
+		if (isSignalGenerated) {
+			setDirectionB();
+		}
+	}
+
 	void generateSignal()
 	{
 		if (isSignalGenerated)
@@ -106,6 +142,14 @@ public:
 		}
 	}
 
+	void generateSignalB()
+	{
+		if (isSignalGenerated)
+		{
+            HAL_GPIO_TogglePin(S2_CLK_GPIO_Port, S2_CLK_Pin);
+		}
+	}
+
 	void setDirection()
 	{
 		if (direction != currentDirection)
@@ -114,4 +158,13 @@ public:
 			currentDirection = direction;
 		}
 	}
+
+    void setDirectionB()
+    {
+        if (direction != currentDirection)
+        {
+            HAL_GPIO_TogglePin(S2_DIR_GPIO_Port, S2_DIR_Pin);
+            currentDirection = direction;
+        }
+    }
 };
