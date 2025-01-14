@@ -651,14 +651,14 @@ void StartEchoTask(void *argument)
 				  HAL_GPIO_WritePin(S2_EN_GPIO_Port, S2_EN_Pin, isEngineEnabled == 1);
 				}
 
-              cJSON *positionAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionA");
-              if (cJSON_IsNumber(positionAItem)) {
-            	  desiredPos = positionAItem->valueint;
+              cJSON *positionXItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionX");
+              if (cJSON_IsNumber(positionXItem)) {
+            	  desiredPos = positionXItem->valueint;
               }
 
-              cJSON *positionBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionB");
-				if (cJSON_IsNumber(positionBItem)) {
-				  desiredPosB = positionBItem->valueint;
+              cJSON *positionYItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionY");
+				if (cJSON_IsNumber(positionYItem)) {
+				  desiredPosB = positionYItem->valueint;
 				}
 
 			cJSON *modeItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "mode");
@@ -674,28 +674,28 @@ void StartEchoTask(void *argument)
               for (int i = 0; i < dataA.position; i++) {
                      cJSON_AddItemToArray(jsonArrayA, cJSON_CreateNumber(dataA.array[i]));
               }
-              cJSON_AddItemToObject(jsonObject, "dataA", jsonArrayA);
+              cJSON_AddItemToObject(jsonObject, "dataX", jsonArrayA);
               clear(&dataA);
 
               cJSON *jsonArrayErrorA = cJSON_CreateArray();
               for (int i = 0; i < dataErrorA.position; i++) {
             	  cJSON_AddItemToArray(jsonArrayErrorA, cJSON_CreateNumber(dataErrorA.array[i]));
               }
-              cJSON_AddItemToObject(jsonObject, "dataErrorA", jsonArrayErrorA);
+              cJSON_AddItemToObject(jsonObject, "dataErrorX", jsonArrayErrorA);
               clearError(&dataErrorA);
 
               cJSON *jsonArrayErrorB = cJSON_CreateArray();
               for (int i = 0; i < dataErrorB.position; i++) {
             	  cJSON_AddItemToArray(jsonArrayErrorB, cJSON_CreateNumber(dataErrorB.array[i]));
               }
-              cJSON_AddItemToObject(jsonObject, "dataErrorB", jsonArrayErrorB);
+              cJSON_AddItemToObject(jsonObject, "dataErrorY", jsonArrayErrorB);
               clearError(&dataErrorB);
 
               cJSON *jsonArrayB = cJSON_CreateArray();
               for (int i = 0; i < dataB.position; i++) {
                       cJSON_AddItemToArray(jsonArrayB, cJSON_CreateNumber(dataB.array[i]));
               }
-              cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
+              cJSON_AddItemToObject(jsonObject, "dataY", jsonArrayB);
               clear(&dataB);
 
               char *jsonStringifiedSend = cJSON_PrintUnformatted(jsonObject);

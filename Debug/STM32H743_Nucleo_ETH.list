@@ -5763,29 +5763,29 @@ lwiperf_tx_start_impl(const ip_addr_t *remote_ip, u16_t remote_port, lwiperf_set
 				  HAL_GPIO_WritePin(S2_EN_GPIO_Port, S2_EN_Pin, isEngineEnabled == 1);
 				}
 
-              cJSON *positionAItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionA");
+              cJSON *positionXItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionX");
  800290a:	4980      	ldr	r1, [pc, #512]	; (8002b0c <StartEchoTask+0x2a4>)
  800290c:	4620      	mov	r0, r4
  800290e:	f7fe ff39 	bl	8001784 <cJSON_GetObjectItemCaseSensitive>
  8002912:	4681      	mov	r9, r0
-              if (cJSON_IsNumber(positionAItem)) {
+              if (cJSON_IsNumber(positionXItem)) {
  8002914:	f7fe ffbe 	bl	8001894 <cJSON_IsNumber>
  8002918:	b118      	cbz	r0, 8002922 <StartEchoTask+0xba>
-            	  desiredPos = positionAItem->valueint;
+            	  desiredPos = positionXItem->valueint;
  800291a:	f8d9 3014 	ldr.w	r3, [r9, #20]
  800291e:	4a7c      	ldr	r2, [pc, #496]	; (8002b10 <StartEchoTask+0x2a8>)
  8002920:	6013      	str	r3, [r2, #0]
               }
 
-              cJSON *positionBItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionB");
+              cJSON *positionYItem = cJSON_GetObjectItemCaseSensitive(jsonReceived, "positionY");
  8002922:	497c      	ldr	r1, [pc, #496]	; (8002b14 <StartEchoTask+0x2ac>)
  8002924:	4620      	mov	r0, r4
  8002926:	f7fe ff2d 	bl	8001784 <cJSON_GetObjectItemCaseSensitive>
  800292a:	4681      	mov	r9, r0
-				if (cJSON_IsNumber(positionBItem)) {
+				if (cJSON_IsNumber(positionYItem)) {
  800292c:	f7fe ffb2 	bl	8001894 <cJSON_IsNumber>
  8002930:	b118      	cbz	r0, 800293a <StartEchoTask+0xd2>
-				  desiredPosB = positionBItem->valueint;
+				  desiredPosB = positionYItem->valueint;
  8002932:	f8d9 3014 	ldr.w	r3, [r9, #20]
  8002936:	4a78      	ldr	r2, [pc, #480]	; (8002b18 <StartEchoTask+0x2b0>)
  8002938:	6013      	str	r3, [r2, #0]
@@ -5839,7 +5839,7 @@ lwiperf_tx_start_impl(const ip_addr_t *remote_ip, u16_t remote_port, lwiperf_set
  800298c:	42a3      	cmp	r3, r4
  800298e:	dcf0      	bgt.n	8002972 <StartEchoTask+0x10a>
               }
-              cJSON_AddItemToObject(jsonObject, "dataA", jsonArrayA);
+              cJSON_AddItemToObject(jsonObject, "dataX", jsonArrayA);
  8002990:	465a      	mov	r2, fp
  8002992:	4964      	ldr	r1, [pc, #400]	; (8002b24 <StartEchoTask+0x2bc>)
  8002994:	4648      	mov	r0, r9
@@ -5875,7 +5875,7 @@ lwiperf_tx_start_impl(const ip_addr_t *remote_ip, u16_t remote_port, lwiperf_set
  80029ce:	42a3      	cmp	r3, r4
  80029d0:	dcf0      	bgt.n	80029b4 <StartEchoTask+0x14c>
               }
-              cJSON_AddItemToObject(jsonObject, "dataErrorA", jsonArrayErrorA);
+              cJSON_AddItemToObject(jsonObject, "dataErrorX", jsonArrayErrorA);
  80029d2:	465a      	mov	r2, fp
  80029d4:	4954      	ldr	r1, [pc, #336]	; (8002b28 <StartEchoTask+0x2c0>)
  80029d6:	4648      	mov	r0, r9
@@ -5911,7 +5911,7 @@ lwiperf_tx_start_impl(const ip_addr_t *remote_ip, u16_t remote_port, lwiperf_set
  8002a10:	42a3      	cmp	r3, r4
  8002a12:	dcf0      	bgt.n	80029f6 <StartEchoTask+0x18e>
               }
-              cJSON_AddItemToObject(jsonObject, "dataErrorB", jsonArrayErrorB);
+              cJSON_AddItemToObject(jsonObject, "dataErrorY", jsonArrayErrorB);
  8002a14:	465a      	mov	r2, fp
  8002a16:	4945      	ldr	r1, [pc, #276]	; (8002b2c <StartEchoTask+0x2c4>)
  8002a18:	4648      	mov	r0, r9
@@ -5947,7 +5947,7 @@ lwiperf_tx_start_impl(const ip_addr_t *remote_ip, u16_t remote_port, lwiperf_set
  8002a52:	42a3      	cmp	r3, r4
  8002a54:	dcf0      	bgt.n	8002a38 <StartEchoTask+0x1d0>
               }
-              cJSON_AddItemToObject(jsonObject, "dataB", jsonArrayB);
+              cJSON_AddItemToObject(jsonObject, "dataY", jsonArrayB);
  8002a56:	465a      	mov	r2, fp
  8002a58:	4935      	ldr	r1, [pc, #212]	; (8002b30 <StartEchoTask+0x2c8>)
  8002a5a:	4648      	mov	r0, r9
