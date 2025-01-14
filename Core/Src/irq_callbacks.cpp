@@ -78,28 +78,13 @@ void TIM4_IRQHandler(void) {
 /* Set clock signal to control stepper motor */
 void TIM4_IRQ_Callback()
 {
-	if (isEngineEnabled) {
-		stepperController.generateSignal();
-		stepperControllerB.generateSignalB();
-	}
-//	if (isClocked)
-//	{
-//		if (cntFreq == frequencyPrescaler)
-//		{
-//			HAL_GPIO_TogglePin(S_CLK_GPIO_Port, S_CLK_Pin);
-//			cntFreq = 0;
-//		}
-//		else
-//		{
-//			cntFreq++;
-//		}
-//	}
+
+
 }
 
 /* Read Encoder and set control signal */
 void TIM5_IRQ_Callback()
 {
-//	readRequest();
 	if (mode == 1) {
 	    uint32_t posSin = amplitude * sin(2.0 * PI * frequency * probe / SAMPLING_RATE) + offset;
         desiredPos = posSin;
@@ -158,6 +143,9 @@ void SPI3_ReceiveCompleteCallback()
 	}
 
 	stepperController.calcInput(desiredPos, posA);
+	if (isEngineEnabled) {
+		stepperController.generateSignal();
+	}
 }
 
 void SPI2_ReceiveCompleteCallback()
@@ -170,4 +158,7 @@ void SPI2_ReceiveCompleteCallback()
 		probeB = 0;
 	}
 	stepperControllerB.calcInputB(desiredPosB, posB);
+	if (isEngineEnabled) {
+		stepperControllerB.generateSignalB();
+	}
 }
